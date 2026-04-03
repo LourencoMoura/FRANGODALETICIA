@@ -1,11 +1,11 @@
-import { Express } from "express";
+import { Router } from "express";
 import { getDb } from "./db.js";
 import { orders, settings } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 
-export function registerWebhookRoutes(app: Express) {
-  app.post("/api/webhooks/mercado-pago", async (req, res) => {
+export function registerWebhookRoutes(app: Router) {
+  app.post("/webhooks/mercado-pago", async (req, res) => {
     const body = req.body;
     const action = body.action || req.query.action;
     const data = body.data || req.query;

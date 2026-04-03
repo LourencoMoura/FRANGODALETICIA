@@ -44,8 +44,11 @@ const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// API Router to handle /api/* routes
+const apiRouter = express.Router();
+
 // Global Health Check (Diagnostics)
-app.get("/api/ping", (_req, res) => {
+apiRouter.get("/ping", (_req, res) => {
   console.log("[Diagnostics] Ping request received.");
   res.json({ 
     status: "ok", 
@@ -56,7 +59,7 @@ app.get("/api/ping", (_req, res) => {
   });
 });
 
-app.get("/api/db-test", async (_req, res) => {
+apiRouter.get("/db-test", async (_req, res) => {
   try {
     const { getDb } = await import("../db.js");
     const db = await getDb();
@@ -68,23 +71,30 @@ app.get("/api/db-test", async (_req, res) => {
 });
 
 console.log("[Lifecycle] Registering routes...");
-// OAuth callback under /api/oauth/callback
-registerOAuthRoutes(app);
-// Mercado Pago Webhook
-registerWebhookRoutes(app);
+// OAuth callback & Webhooks on the API router
+registerOAuthRoutes(apiRouter);
+registerWebhookRoutes(apiRouter);
 
 console.log("[Lifecycle] Setting up tRPC...");
-// tRPC API
-app.use(
-  "/api/trpc",
+// tRPC API on the API router
+apiRouter.use(
+  "/trpc",
   createExpressMiddleware({
     router: appRouter,
     createContext,
   })
 );
 
+// Mount API router
+// On Vercel, we often want to mount it at both '/' and '/api' to be resilient
+app.use("/api", apiRouter);
+// Fallback: If Vercel functions already route to /api, the base path might be '/'
+if (process.env.VERCEL) {
+  app.use("/", apiRouter);
+}
+
 // Global Error Handler for API routes (Rescue)
-app.use("/api", (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+apiRouter.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(`[API ERROR] ${req.method} ${req.url}:`, err);
   res.status(500).json({
     error: {
