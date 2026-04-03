@@ -30,10 +30,16 @@ queryClient.getQueryCache().subscribe(event => {
     if (
       error instanceof Error &&
       (error.message.includes("end of JSON input") ||
-        error.message.includes("failed to fetch"))
+        error.message.includes("failed to fetch") ||
+        error.message.includes("Internal Server Error"))
     ) {
       console.error(
-        "🚨 [CRITICAL NETWORK/JSON ERROR]: A Vercel rertornou um corpo vazio ou erro de rede. Verifique os logs do servidor.",
+        "🚨 [CRITICAL]: Falha na comunicação com o servidor Vercel. \n\n" +
+          "Possíveis causas: \n" +
+          "1. DATABASE_URL não configurada no painel da Vercel. \n" +
+          "2. Banco de dados Supabase recusando conexões. \n" +
+          "3. Erro de sintaxe no servidor que impede o boot. \n\n" +
+          "Verifique os logs em https://vercel.com/dashboard",
         error
       );
     } else {

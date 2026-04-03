@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import { sql } from "drizzle-orm";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { serveStatic, setupVite } from "./vite.js";
 import { initializeReminders } from "../reminder-scheduler.js";
@@ -52,26 +53,40 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // API Router to handle /api/* routes
 const apiRouter = express.Router();
 
-// Global Health Check (Diagnostics)
+// Global Health Check (Diagnostics) - Fully independent to debug connectivity
 apiRouter.get("/ping", (_req, res) => {
   console.log("[Diagnostics] Ping request received.");
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV,
-    has_db_url: !!process.env.DATABASE_URL,
-    platform: process.env.VERCEL ? "vercel" : "local",
+    db_configured: !!process.env.DATABASE_URL,
+    deployment: process.env.VERCEL ? "vercel" : "standalone",
+    version: "1.1.1" 
   });
 });
 
 apiRouter.get("/db-test", async (_req, res) => {
+  console.log("[Diagnostics] Manual DB test requested.");
   try {
     const { getDb } = await import("../db.js");
     const db = await getDb();
-    if (!db) throw new Error("Banco de dados não disponível.");
-    res.json({ status: "connected" });
+    if (!db) {
+      return res.status(503).json({ 
+        status: "error", 
+        message: "Banco de dados não configurado ou indisponível." 
+      });
+    }
+    // Simple query to verify connection
+    const result = await db.execute(sql`SELECT 1 as connected`);
+    res.json({ status: "connected", result });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    console.error("[Diagnostics] DB Test Failed:", err);
+    res.status(500).json({ 
+      status: "error", 
+      message: err.message,
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+    });
   }
 });
 
@@ -142,14 +157,18 @@ async function startServer() {
       initializeReminders().catch(console.error);
     });
   } else {
-    // In Serverless, we still need to initialize reminders once if possible
-    console.log("[Vercel] Booting in serverless mode...");
-    initializeReminders().catch(err =>
-      console.error("[Reminders] Failed to initialize on boot:", err)
-    );
+    console.log("[Vercel] Booting in serverless mode. Background tasks disabled.");
+    // No Vercel, não iniciamos schedulers via setTimeout pois a execução é efêmera.
   }
 }
 
-startServer().catch(console.error);
+// Global Startup protection
+try {
+  startServer().catch(err => {
+    console.error("[CRITICAL] Failed to start server:", err);
+  });
+} catch (err) {
+  console.error("[CRITICAL] Fatal error during startup sequence:", err);
+}
 
 export default app;
