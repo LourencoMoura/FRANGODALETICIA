@@ -169,12 +169,18 @@ async function startServer() {
 }
 
 // Global Startup protection
-try {
-  startServer().catch(err => {
-    console.error("[CRITICAL] Failed to start server:", err);
-  });
-} catch (err) {
-  console.error("[CRITICAL] Fatal error during startup sequence:", err);
+if (!process.env.VERCEL) {
+  try {
+    startServer().catch(err => {
+      console.error("[CRITICAL] Failed to start server:", err);
+    });
+  } catch (err) {
+    console.error("[CRITICAL] Fatal error during startup sequence:", err);
+  }
+} else {
+  // Em ambiente Vercel, apenas registramos as rotas estáticas (fallback) em modo síncrono
+  // O Vite NUNCA deve ser importado aqui.
+  import("./vite.js").then(({ serveStatic }) => serveStatic(app)).catch(console.error);
 }
 
 export default app;

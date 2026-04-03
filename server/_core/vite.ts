@@ -52,10 +52,14 @@ export function serveStatic(app: Express) {
     process.env.NODE_ENV === "development"
       ? path.resolve(import.meta.dirname, "../..", "dist", "public")
       : path.resolve(import.meta.dirname, "public");
+  
   if (!fs.existsSync(distPath)) {
-    console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
+    if (!process.env.VERCEL) {
+      console.error(
+        `Could not find the build directory: ${distPath}, make sure to build the client first`
+      );
+    }
+    return; // Don't mount static routes in Vercel API function
   }
 
   app.use(express.static(distPath));
