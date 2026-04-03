@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO customers (whatsapp, nome, apelido) VALUES ('84999999999', 'João Silva', 'João');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2pckFt2u5CeuxLq.root --database BXW8YSRvB65k9jVkEnY35S --execute INSERT INTO customers (whatsapp, nome, apelido) VALUES ('84999999999', 'João Silva', 'João');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 175
+}
