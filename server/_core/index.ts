@@ -86,12 +86,10 @@ apiRouter.use(
 );
 
 // Mount API router
-// On Vercel, we often want to mount it at both '/' and '/api' to be resilient
+// On Vercel, we mount it at BOTH '/' and '/api' to be absolutely resilient 
+// to how Vercel and the rewrites handle the incoming path.
 app.use("/api", apiRouter);
-// Fallback: If Vercel functions already route to /api, the base path might be '/'
-if (process.env.VERCEL) {
-  app.use("/", apiRouter);
-}
+app.use("/", apiRouter);
 
 // Global Error Handler for API routes (Rescue)
 apiRouter.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
