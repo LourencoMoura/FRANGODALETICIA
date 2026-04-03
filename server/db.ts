@@ -1,9 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, and, desc, sql } from "drizzle-orm";
-import * as schema from "../drizzle/schema";
-import { InsertUser, users, orders, pushSubscriptions, customers, Admin, InsertAdmin, admins } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import * as schema from "../drizzle/schema.js";
+import { InsertUser, users, orders, pushSubscriptions, customers, Admin, InsertAdmin, admins } from "../drizzle/schema.js";
+import { ENV } from './_core/env.js';
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

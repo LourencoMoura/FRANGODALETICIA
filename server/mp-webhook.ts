@@ -1,6 +1,6 @@
 import { Express } from "express";
-import { getDb } from "./db";
-import { orders, settings } from "../drizzle/schema";
+import { getDb } from "./db.js";
+import { orders, settings } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 

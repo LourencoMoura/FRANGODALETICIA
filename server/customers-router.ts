@@ -1,8 +1,8 @@
-import { publicProcedure, router } from './_core/trpc';
+import { publicProcedure, router } from './_core/trpc.js';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { customers } from '../drizzle/schema';
-import { getDb } from './db';
+import { customers } from '../drizzle/schema.js';
+import { getDb } from './db.js';
 import { TRPCError } from '@trpc/server';
 
 export const customersRouter = router({

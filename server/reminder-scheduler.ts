@@ -1,8 +1,8 @@
 import { eq, ne } from 'drizzle-orm';
 import { orders } from '../drizzle/schema';
 import webpush from 'web-push';
-import { getDb } from './db';
-import { sendPushNotification } from './push-notifications';
+import { getDb } from './db.js';
+import { sendPushNotification } from './push-notifications.js';
 
 // Configure VAPID
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY;

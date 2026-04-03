@@ -1,16 +1,16 @@
-import { COOKIE_NAME } from "../shared/const";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
-import { pushRouter } from "./push-router";
-import { customersRouter } from "./customers-router";
-import { promotionsRouter } from "./promotions-router";
-import { ordersRouter } from "./orders-router";
-import { paymentRouter } from "./payment-router";
+import { COOKIE_NAME } from "../shared/const.js";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { systemRouter } from "./_core/systemRouter.js";
+import { publicProcedure, router } from "./_core/trpc.js";
+import { pushRouter } from "./push-router.js";
+import { customersRouter } from "./customers-router.js";
+import { promotionsRouter } from "./promotions-router.js";
+import { ordersRouter } from "./orders-router.js";
+import { paymentRouter } from "./payment-router.js";
 import { z } from "zod";
 
-import { adminsRouter } from "./admins-router";
-import { settingsRouter } from "./settings-router";
+import { adminsRouter } from "./admins-router.js";
+import { settingsRouter } from "./settings-router.js";
 
 export const appRouter = router({
   system: systemRouter,

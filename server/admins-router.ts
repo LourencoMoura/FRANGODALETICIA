@@ -1,10 +1,10 @@
-import { router, publicProcedure } from "./_core/trpc";
+import { router, publicProcedure } from "./_core/trpc.js";
 import { z } from "zod";
-import { getAdminByEmail, setAdminResetToken, updateAdminPassword } from "./db";
+import { getAdminByEmail, setAdminResetToken, updateAdminPassword } from "./db.js";
 // @ts-ignore
 import bcrypt from "bcryptjs";
-import { COOKIE_NAME } from "@shared/const";
-import { getSessionCookieOptions } from "./_core/cookies";
+import { COOKIE_NAME } from "../shared/const.js";
+import { getSessionCookieOptions } from "./_core/cookies.js";
 
 export const adminsRouter = router({
   login: publicProcedure

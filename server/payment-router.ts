@@ -1,9 +1,9 @@
-import { router, publicProcedure } from "./_core/trpc";
+import { router, publicProcedure } from "./_core/trpc.js";
 import { z } from "zod";
-import { settings, orders } from "../drizzle/schema";
+import { settings, orders } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-import { getDb } from "./db";
+import { getDb } from "./db.js";
 
 // Helper to get MP Client
 async function getMPClient() {

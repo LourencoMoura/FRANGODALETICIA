@@ -1,7 +1,7 @@
-import { publicProcedure, router } from './_core/trpc';
+import { publicProcedure, router } from './_core/trpc.js';
 import { z } from 'zod';
-import { savePushSubscription as saveSubscription, getAllPushSubscriptions } from './db';
-import { sendPushNotification, sendPromotionNotification, sendBroadcastPushNotification } from './push-notifications';
+import { savePushSubscription as saveSubscription, getAllPushSubscriptions } from './db.js';
+import { sendPushNotification, sendPromotionNotification, sendBroadcastPushNotification } from './push-notifications.js';
 
 export const pushRouter = router({
   // Salvar subscrição de um cliente
@@ -33,7 +33,7 @@ export const pushRouter = router({
     .input(z.object({ endpoint: z.string() }))
     .mutation(async ({ input }) => {
       try {
-        const { deletePushSubscription } = await import('./db');
+        const { deletePushSubscription } = await import('./db.js');
         await deletePushSubscription(input.endpoint);
         return { success: true, message: 'Subscrição removida do servidor' };
       } catch (error) {

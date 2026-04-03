@@ -1,8 +1,8 @@
-import { publicProcedure, router } from './_core/trpc';
+import { publicProcedure, router } from './_core/trpc.js';
 import { z } from 'zod';
 import { eq, desc } from 'drizzle-orm';
-import { promotions } from '../drizzle/schema';
-import { getDb } from './db';
+import { promotions } from '../drizzle/schema.js';
+import { getDb } from './db.js';
 
 export const promotionsRouter = router({
   // List all active promotions
@@ -43,7 +43,7 @@ export const promotionsRouter = router({
         }).returning({ id: promotions.id });
 
         // Trigger broadcast notification
-        const { sendPromotionNotification } = await import('./push-notifications');
+        const { sendPromotionNotification } = await import('./push-notifications.js');
         await sendPromotionNotification(
           input.titulo,
           input.descricao,

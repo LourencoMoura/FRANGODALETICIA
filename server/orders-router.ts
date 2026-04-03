@@ -1,10 +1,10 @@
-import { publicProcedure, router } from './_core/trpc';
+import { publicProcedure, router } from './_core/trpc.js';
 import { z } from 'zod';
 import { eq, sql } from 'drizzle-orm';
-import { customers, orders } from '../drizzle/schema';
+import { customers, orders } from '../drizzle/schema.js';
 import webpush from 'web-push';
-import { scheduleReminder } from './reminder-scheduler';
-import { createOrder as createOrderDb, getOrdersByCustomerId, getAllOrders, getOrderById, getDb } from './db';
+import { scheduleReminder } from './reminder-scheduler.js';
+import { createOrder as createOrderDb, getOrdersByCustomerId, getAllOrders, getOrderById, getDb } from './db.js';
 
 // Configure VAPID
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY;
@@ -141,7 +141,7 @@ export const ordersRouter = router({
         await db.update(orders).set({ status: input.status }).where(eq(orders.id, input.orderId));
 
         // Send notification to customer via push subscriptions
-        const { sendStatusUpdateNotification } = await import('./push-notifications');
+        const { sendStatusUpdateNotification } = await import('./push-notifications.js');
         const { sent, failed } = await sendStatusUpdateNotification(
           order.customerId,
           input.status,
@@ -186,7 +186,7 @@ export const ordersRouter = router({
         if (!order) throw new Error('Order not found');
 
         // Send reminder notification
-        const { sendPushNotification } = await import('./push-notifications');
+        const { sendPushNotification } = await import('./push-notifications.js');
         const { sent, failed } = await sendPushNotification(
           order.customerId,
           '⏰ Lembrete de Pedido',

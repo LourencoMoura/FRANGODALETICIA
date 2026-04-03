@@ -1,5 +1,5 @@
 import webpush from 'web-push';
-import { getPushSubscriptions, getAllPushSubscriptions, deletePushSubscription } from './db';
+import { getPushSubscriptions, getAllPushSubscriptions, deletePushSubscription } from './db.js';
 
 // Configure VAPID
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY;

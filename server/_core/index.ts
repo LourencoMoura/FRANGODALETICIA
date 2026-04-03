@@ -3,12 +3,12 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { serveStatic, setupVite } from "./vite";
-import { initializeReminders } from "../reminder-scheduler";
-import { registerWebhookRoutes } from "../mp-webhook";
-import { registerOAuthRoutes } from "./oauth";
-import { appRouter } from "../routers";
-import { createContext } from "./context";
+import { serveStatic, setupVite } from "./vite.js";
+import { initializeReminders } from "../reminder-scheduler.js";
+import { registerWebhookRoutes } from "../mp-webhook.js";
+import { registerOAuthRoutes } from "./oauth.js";
+import { appRouter } from "../routers.js";
+import { createContext } from "./context.js";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -42,7 +42,7 @@ app.get("/api/ping", (_req, res) => {
 
 app.get("/api/db-test", async (_req, res) => {
   try {
-    const { getDb } = await import("../db");
+    const { getDb } = await import("../db.js");
     const db = await getDb();
     if (!db) throw new Error("Banco de dados não disponível.");
     res.json({ status: "connected" });
