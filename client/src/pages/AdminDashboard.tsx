@@ -15,6 +15,7 @@ import {
   Users,
   Settings,
   ShieldCheck,
+  CheckSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -65,15 +66,7 @@ export default function AdminDashboard() {
     } else {
       setActiveTab("orders");
     }
-  }, [location]);
-
-  // Check admin session
-  useEffect(() => {
-    const session = localStorage.getItem("adminSession");
-    if (!session) {
-      setLocation("/admin");
-    }
-  }, [setLocation]);
+  }, [location, window.location.search]);
 
   // tRPC Queries
   const { data: ordersList, isLoading: isFetchingOrders } =
@@ -301,6 +294,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-4 px-4">
                             <select
+                              aria-label="Alterar status do pedido"
                               value={order.status}
                               onChange={e =>
                                 handleStatusChange(order.id, e.target.value)
@@ -558,26 +552,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </DashboardLayout>
-  );
-}
-
-// Helper icon not imported correctly initially
-function CheckSquare({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <polyline points="9 11 12 14 22 4"></polyline>
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-    </svg>
   );
 }

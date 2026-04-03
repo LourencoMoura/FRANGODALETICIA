@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
@@ -61,21 +62,10 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
 
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(
-    null
-  );
-
-  useEffect(() => {
-    const session = localStorage.getItem("adminSession");
-    if (session) {
-      setUser({
-        name: "Leticia Admin",
-        email: "admin@frango.com",
-      });
-    }
-    setLoading(false);
-  }, []);
+  const { data: user, isLoading: loading } = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -85,7 +75,7 @@ export default function DashboardLayout({
     return <DashboardLayoutSkeleton />;
   }
 
-  if (!user) {
+  if (!user || user.role !== "admin") {
     const [, setLocation] = useLocation();
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -121,7 +111,7 @@ export default function DashboardLayout({
         } as CSSProperties
       }
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
+      <DashboardLayoutContent setSidebarWidth={setSidebarWidth} user={user}>
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
@@ -136,24 +126,18 @@ type DashboardLayoutContentProps = {
 function DashboardLayoutContent({
   children,
   setSidebarWidth,
-}: DashboardLayoutContentProps) {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(
-    null
-  );
-
-  useEffect(() => {
-    const session = localStorage.getItem("adminSession");
-    if (session) {
-      setUser({ name: "Leticia Admin", email: "admin@frango.com" });
-    }
-  }, []);
-
+  user,
+}: DashboardLayoutContentProps & { user: any }) {
   const [location, setLocation] = useLocation();
+  const logoutMutation = trpc.auth.logout.useMutation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  const fullPath = window.location.pathname + window.location.search;
+  const activeMenuItem =
+    menuItems.find(item => fullPath === item.path) ||
+    menuItems.find(item => location === item.path);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -222,7 +206,7 @@ function DashboardLayoutContent({
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
               {menuItems.map(item => {
-                const isActive = location === item.path;
+                const isActive = fullPath === item.path || (location === item.path && !window.location.search);
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
@@ -263,9 +247,15 @@ function DashboardLayoutContent({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={() => {
-                    localStorage.removeItem("adminSession");
-                    setLocation("/admin");
+                  onClick={async () => {
+                    try {
+                      await logoutMutation.mutateAsync();
+                      localStorage.removeItem("adminSession");
+                      setLocation("/admin");
+                    } catch (err) {
+                      console.error("Erro logout:", err);
+                      setLocation("/admin");
+                    }
                   }}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
@@ -277,12 +267,11 @@ function DashboardLayoutContent({
           </SidebarFooter>
         </Sidebar>
         <div
-          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors ${isCollapsed ? "hidden" : ""}`}
+          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors z-50 ${isCollapsed ? "hidden" : ""}`}
           onMouseDown={() => {
             if (isCollapsed) return;
             setIsResizing(true);
           }}
-          style={{ zIndex: 50 }}
         />
       </div>
 
