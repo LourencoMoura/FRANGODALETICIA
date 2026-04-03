@@ -80,8 +80,9 @@ console.log("[Lifecycle] Registering routes...");
 registerOAuthRoutes(apiRouter);
 registerWebhookRoutes(apiRouter);
 
-console.log("[Lifecycle] Setting up tRPC...");
-// tRPC API on the API router
+console.log("[Lifecycle] Setting up routes and tRPC...");
+
+// tRPC API setup - mounted directly on apiRouter
 apiRouter.use(
   "/trpc",
   createExpressMiddleware({
@@ -91,8 +92,7 @@ apiRouter.use(
 );
 
 // Mount API router
-// On Vercel, we mount it at BOTH '/' and '/api' to be absolutely resilient
-// to how Vercel and the rewrites handle the incoming path.
+// Support both prefixed and non-prefixed calls for maximum resilience in Vercel
 app.use("/api", apiRouter);
 app.use("/", apiRouter);
 
