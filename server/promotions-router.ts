@@ -1,4 +1,4 @@
-import { publicProcedure, router } from './_core/trpc.js';
+import { publicProcedure, router, adminProcedure } from './_core/trpc.js';
 import { z } from 'zod';
 import { eq, desc } from 'drizzle-orm';
 import { promotions } from '../drizzle/schema.js';
@@ -17,8 +17,8 @@ export const promotionsRouter = router({
     }
   }),
 
-  // Create a new promotion
-  create: publicProcedure
+  // Create a new promotion (admin only)
+  create: adminProcedure
     .input(
       z.object({
         titulo: z.string(),
@@ -58,8 +58,8 @@ export const promotionsRouter = router({
       }
     }),
 
-  // Update a promotion
-  update: publicProcedure
+  // Update a promotion (admin only)
+  update: adminProcedure
     .input(
       z.object({
         id: z.number(),
@@ -92,8 +92,8 @@ export const promotionsRouter = router({
       }
     }),
 
-  // Delete a promotion
-  delete: publicProcedure
+  // Delete a promotion (admin only)
+  delete: adminProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {
@@ -108,8 +108,8 @@ export const promotionsRouter = router({
       }
     }),
 
-  // Toggle promotion status
-  toggleStatus: publicProcedure
+  // Toggle promotion status (admin only)
+  toggleStatus: adminProcedure
     .input(z.object({ id: z.number(), ativo: z.number() }))
     .mutation(async ({ input }) => {
       try {

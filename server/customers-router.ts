@@ -1,15 +1,18 @@
-import { publicProcedure, router } from './_core/trpc.js';
+import { publicProcedure, router, adminProcedure } from './_core/trpc.js';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { customers } from '../drizzle/schema.js';
-import { getDb } from './db.js';
+import { getDb, upsertUser } from './db.js';
 import { TRPCError } from '@trpc/server';
+import { sdk } from './_core/sdk.js';
+import { COOKIE_NAME, ONE_YEAR_MS } from '../shared/const.js';
+import { getSessionCookieOptions } from './_core/cookies.js';
 
 export const customersRouter = router({
   // Login with WhatsApp
   login: publicProcedure
     .input(z.object({ whatsapp: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: "Database not available" });
@@ -20,7 +23,33 @@ export const customersRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Cliente não encontrado' });
         }
         
-        return { success: true, customer: result[0] };
+        const customer = result[0];
+        const openId = `customer:${customer.id}`;
+
+        // Sincronizar com a tabela unificada de Users para contexto tRPC
+        await upsertUser({
+          openId,
+          name: customer.nome,
+          role: 'user',
+          lastSignedIn: new Date(),
+        });
+
+        // Criar token de sessão
+        const sessionToken = await sdk.createSessionToken(openId, {
+          name: customer.nome,
+          expiresInMs: ONE_YEAR_MS,
+        });
+
+        // Definir Cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+          ...cookieOptions, 
+          maxAge: ONE_YEAR_MS,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production'
+        });
+
+        return { success: true, customer };
       } catch (error) {
         console.error('Error logging in customer:', error);
         if (error instanceof TRPCError) throw error;
@@ -35,7 +64,7 @@ export const customersRouter = router({
       nome: z.string(),
       apelido: z.string(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
         console.log(`[Signup] Attempting signup for ${input.whatsapp}...`);
         const db = await getDb();
@@ -64,6 +93,32 @@ export const customersRouter = router({
           }).returning();
 
           console.log(`[Signup] Success! ID: ${newCustomer.id}`);
+
+          const openId = `customer:${newCustomer.id}`;
+          
+          // Sincronizar com a tabela unificada de Users
+          await upsertUser({
+            openId,
+            name: newCustomer.nome,
+            role: 'user',
+            lastSignedIn: new Date(),
+          });
+
+          // Criar token de sessão automático após cadastro
+          const sessionToken = await sdk.createSessionToken(openId, {
+            name: newCustomer.nome,
+            expiresInMs: ONE_YEAR_MS,
+          });
+
+          // Definir Cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+            ...cookieOptions, 
+            maxAge: ONE_YEAR_MS,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production'
+          });
+
           return { success: true, customer: newCustomer };
         } catch (dbError: any) {
           console.error(`[Signup] DB INSERT ERROR: ${dbError.message}`, dbError);
@@ -99,8 +154,8 @@ export const customersRouter = router({
       }
     }),
   
-  // List all customers (admin)
-  list: publicProcedure
+  // List all customers (admin only)
+  list: adminProcedure
     .query(async () => {
       try {
         const db = await getDb();

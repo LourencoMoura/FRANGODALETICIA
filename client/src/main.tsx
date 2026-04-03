@@ -25,7 +25,13 @@ queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Query Error]", error);
+    
+    // Log detalhado para erros de JSON/Rede (comum na Vercel)
+    if (error instanceof Error && (error.message.includes("end of JSON input") || error.message.includes("failed to fetch"))) {
+      console.error("🚨 [CRITICAL NETWORK/JSON ERROR]: A Vercel rertornou um corpo vazio ou erro de rede. Verifique os logs do servidor.", error);
+    } else {
+      console.error("[API Query Error]", error);
+    }
   }
 });
 

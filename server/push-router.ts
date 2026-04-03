@@ -1,11 +1,11 @@
-import { publicProcedure, router } from './_core/trpc.js';
+import { publicProcedure, router, protectedProcedure, adminProcedure } from './_core/trpc.js';
 import { z } from 'zod';
 import { savePushSubscription as saveSubscription, getAllPushSubscriptions } from './db.js';
 import { sendPushNotification, sendPromotionNotification, sendBroadcastPushNotification } from './push-notifications.js';
 
 export const pushRouter = router({
-  // Salvar subscrição de um cliente
-  subscribe: publicProcedure
+  // Salvar subscrição de um cliente (vínculo automático com a sessão)
+  subscribe: protectedProcedure
     .input(
       z.object({
         customerId: z.number(),
@@ -18,9 +18,15 @@ export const pushRouter = router({
         }),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
-        await saveSubscription(input.customerId, input.subscription);
+        if (!ctx.user || ctx.user.role !== 'user') {
+          throw new Error("Apenas clientes podem se inscrever para notificações");
+        }
+        const customerId = parseInt(ctx.user.openId.split(':')[1]);
+        if (isNaN(customerId)) throw new Error("Sessão inválida");
+
+        await saveSubscription(customerId, input.subscription);
         return { success: true, message: 'Subscrição salva com sucesso' };
       } catch (error) {
         console.error('Erro ao salvar subscrição push:', error);
@@ -42,8 +48,8 @@ export const pushRouter = router({
       }
     }),
 
-  // Enviar notificação de teste/personalizada (Admin)
-  sendToUser: publicProcedure
+  // Enviar notificação de teste/personalizada (Admin only)
+  sendToUser: adminProcedure
     .input(
       z.object({
         customerId: z.number(),
@@ -61,8 +67,8 @@ export const pushRouter = router({
       }
     }),
 
-  // Enviar promoção (Broadcast)
-  sendPromotion: publicProcedure
+  // Enviar promoção (Broadcast) (Admin only)
+  sendPromotion: adminProcedure
     .input(
       z.object({
         title: z.string(),

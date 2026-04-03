@@ -49,7 +49,7 @@ export const notifications = pgTable("notifications", {
 
 export const orders = pgTable("orders", {
 	id: serial("id").primaryKey().notNull(),
-	customerId: integer("customer_id").notNull(),
+	customerId: integer("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
 	tipo: orderTipoEnum("tipo").notNull(),
 	localidade: varchar("localidade", { length: 100 }),
 	endereco: text("endereco"),
@@ -77,7 +77,7 @@ export const products = pgTable("products", {
 
 export const pushSubscriptions = pgTable("push_subscriptions", {
 	id: serial("id").primaryKey().notNull(),
-	customerId: integer("customer_id").notNull(),
+	customerId: integer("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
 	endpoint: text("endpoint").notNull(),
 	auth: varchar("auth", { length: 255 }).notNull(),
 	p256dh: varchar("p256dh", { length: 255 }).notNull(),

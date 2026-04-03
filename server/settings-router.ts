@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "./_core/trpc.js";
+import { router, publicProcedure, adminProcedure } from "./_core/trpc.js";
 import { z } from "zod";
 import { settings } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
@@ -24,8 +24,8 @@ export const settingsRouter = router({
     };
   }),
 
-  // Retorna todas as configurações para o Admin
-  getAdminSettings: publicProcedure.query(async () => {
+  // Retorna todas as configurações para o Admin (admin only)
+  getAdminSettings: adminProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
 
@@ -33,8 +33,8 @@ export const settingsRouter = router({
     return allSettings;
   }),
 
-  // Atualiza ou insere uma configuração
-  updateSetting: publicProcedure
+  // Atualiza ou insere uma configuração (admin only)
+  updateSetting: adminProcedure
     .input(z.object({
       key: z.string(),
       value: z.string(),
@@ -53,8 +53,8 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // Atualiza múltiplas configurações de uma vez
-  updateBatch: publicProcedure
+  // Atualiza múltiplas configurações de uma vez (admin only)
+  updateBatch: adminProcedure
     .input(z.array(z.object({
       key: z.string(),
       value: z.string(),

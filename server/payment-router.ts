@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "./_core/trpc.js";
+import { router, publicProcedure, adminProcedure, protectedProcedure } from "./_core/trpc.js";
 import { z } from "zod";
 import { settings, orders } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
@@ -36,7 +36,7 @@ export const paymentRouter = router({
   }),
 
   // Get all settings (for admin)
-  getAdminSettings: publicProcedure.query(async () => {
+  getAdminSettings: adminProcedure.query(async () => {
     const db = await getDb();
     if (!db) return { publicKey: "", accessToken: "" };
     const publicKey = await db.query.settings.findFirst({
@@ -52,7 +52,7 @@ export const paymentRouter = router({
   }),
 
   // Save settings
-  saveSettings: publicProcedure
+  saveSettings: adminProcedure
     .input(z.object({
       publicKey: z.string(),
       accessToken: z.string(),
@@ -74,18 +74,29 @@ export const paymentRouter = router({
     }),
 
   // Create Checkout Preference
-  createPreference: publicProcedure
+  createPreference: protectedProcedure
     .input(z.object({
       orderId: z.number(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not connected");
+
       const order = await db.query.orders.findFirst({
         where: eq(orders.id, input.orderId),
       });
-
+      
       if (!order) throw new Error("Pedido não encontrado");
+
+      // Validar se o pedido pertence ao cliente logado
+      if (!ctx.user || ctx.user.role !== 'user') {
+        throw new Error("Acesso não autorizado");
+      }
+      
+      const sessionCustomerId = parseInt(ctx.user.openId.split(':')[1]);
+      if (order.customerId !== sessionCustomerId) {
+        throw new Error("Você não tem permissão para pagar por este pedido.");
+      }
 
       const client = await getMPClient();
       if (!client) throw new Error("Mercado Pago não configurado. Por favor, contate o administrador.");

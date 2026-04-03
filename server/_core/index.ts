@@ -10,6 +10,15 @@ import { registerOAuthRoutes } from "./oauth.js";
 import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
 
+// Global Exception Loggers for Vercel Debugging
+process.on("uncaughtException", (err) => {
+  console.error("[CRITICAL] Uncaught Exception:", err.message, err.stack);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("[CRITICAL] Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -37,7 +46,14 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Global Health Check (Diagnostics)
 app.get("/api/ping", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), env: process.env.NODE_ENV });
+  console.log("[Diagnostics] Ping request received.");
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(), 
+    env: process.env.NODE_ENV,
+    has_db_url: !!process.env.DATABASE_URL,
+    platform: process.env.VERCEL ? "vercel" : "local"
+  });
 });
 
 app.get("/api/db-test", async (_req, res) => {

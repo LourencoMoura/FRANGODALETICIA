@@ -1,10 +1,11 @@
 import { router, publicProcedure } from "./_core/trpc.js";
 import { z } from "zod";
-import { getAdminByEmail, setAdminResetToken, updateAdminPassword } from "./db.js";
+import { getAdminByEmail, setAdminResetToken, updateAdminPassword, upsertUser } from "./db.js";
 // @ts-ignore
 import bcrypt from "bcryptjs";
-import { COOKIE_NAME } from "../shared/const.js";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
+import { sdk } from "./_core/sdk.js";
 
 export const adminsRouter = router({
   login: publicProcedure
@@ -25,8 +26,32 @@ export const adminsRouter = router({
         throw new Error("Usuário ou senha inválidos");
       }
       
-      // In a real session system, we would set a JWT or session cookie here
-      // But for this platform, we'll keep it simple and return the admin info
+      const openId = `admin:${admin.id}`;
+      
+      // Sincronizar com a tabela unificada de Users para que o tRPC Context funcione
+      await upsertUser({
+        openId: openId,
+        name: "Admin",
+        email: admin.email,
+        role: "admin",
+        lastSignedIn: new Date(),
+      });
+
+      // Criar token de sessão (JWT Local)
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name: "Admin",
+        expiresInMs: ONE_YEAR_MS,
+      });
+
+      // Definir Cookie no Navegador
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+        ...cookieOptions, 
+        maxAge: ONE_YEAR_MS,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+      });
+      
       return {
         success: true,
         admin: {

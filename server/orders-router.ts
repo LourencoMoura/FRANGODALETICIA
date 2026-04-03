@@ -1,4 +1,4 @@
-import { publicProcedure, router } from './_core/trpc.js';
+import { publicProcedure, router, protectedProcedure, adminProcedure } from './_core/trpc.js';
 import { z } from 'zod';
 import { eq, sql } from 'drizzle-orm';
 import { customers, orders } from '../drizzle/schema.js';
@@ -58,13 +58,21 @@ export const ordersRouter = router({
         paymentMethod: z.enum(['online', 'presencial']).default('presencial'),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
+        // Extrair ID numérico do cliente da sessão (openId: 'customer:123')
+        if (!ctx.user || ctx.user.role !== 'user') {
+          throw new Error("Apenas clientes logados podem criar pedidos");
+        }
+        
+        const customerId = parseInt(ctx.user.openId.split(':')[1]);
+        if (isNaN(customerId)) throw new Error("Sessão de cliente inválida");
+
         const result = await createOrderDb({
-          customerId: input.customerId,
+          customerId: customerId,
           tipo: input.tipo,
           localidade: input.localidade || null,
           endereco: input.endereco || null,
@@ -77,7 +85,7 @@ export const ordersRouter = router({
 
         // Add loyalty points (1 point per R$ 1,00)
         const pointsToAdd = Math.floor(input.total);
-        await db.execute(sql`UPDATE customers SET points = points + ${pointsToAdd} WHERE id = ${input.customerId}`);
+        await db.execute(sql`UPDATE customers SET points = points + ${pointsToAdd} WHERE id = ${customerId}`);
 
         // Schedule reminder for the order
         await scheduleReminder(result.insertId);
@@ -90,11 +98,14 @@ export const ordersRouter = router({
     }),
 
   // Get orders for a customer
-  getOrdersByCustomer: publicProcedure
-    .input(z.object({ customerId: z.number() }))
-    .query(async ({ input }) => {
+  getOrdersByCustomer: protectedProcedure
+    .query(async ({ ctx }) => {
       try {
-        const orders = await getOrdersByCustomerId(input.customerId);
+        if (!ctx.user) throw new Error("Não autenticado");
+        const customerId = parseInt(ctx.user.openId.split(':')[1]);
+        if (isNaN(customerId)) throw new Error("Sessão inválida");
+
+        const orders = await getOrdersByCustomerId(customerId);
         return { success: true, orders };
       } catch (error) {
         console.error('Error getting orders:', error);
@@ -103,7 +114,7 @@ export const ordersRouter = router({
     }),
 
   // Get all orders (admin)
-  list: publicProcedure
+  list: adminProcedure
     .query(async () => {
       try {
         const allOrders = await getAllOrders();
@@ -115,7 +126,7 @@ export const ordersRouter = router({
     }),
 
   // Update order status
-  updateStatus: publicProcedure
+  updateStatus: adminProcedure
     .input(
       z.object({
         orderId: z.number(),
@@ -161,7 +172,7 @@ export const ordersRouter = router({
     }),
 
   // Schedule reminder for an order
-  scheduleReminder: publicProcedure
+  scheduleReminder: adminProcedure
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ input }) => {
       try {
@@ -173,8 +184,8 @@ export const ordersRouter = router({
       }
     }),
 
-  // Send reminder notification (15-30 minutes before delivery/pickup)
-  sendReminder: publicProcedure
+  // Send reminder notification (admin)
+  sendReminder: adminProcedure
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ input }) => {
       try {
@@ -201,7 +212,7 @@ export const ordersRouter = router({
     }),
 
   // Get order by ID
-  getById: publicProcedure
+  getById: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       try {
