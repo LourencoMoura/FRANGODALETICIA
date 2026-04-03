@@ -2,6 +2,7 @@ import { eq, ne } from 'drizzle-orm';
 import { orders } from '../drizzle/schema';
 import webpush from 'web-push';
 import { getDb } from './db';
+import { sendPushNotification } from './push-notifications';
 
 // Configure VAPID
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY;
@@ -107,7 +108,7 @@ async function sendReminderNotification(orderId: number) {
     const order = result[0];
 
     // Send push notification to customer
-    const { sendPushNotification } = await import('./push-notifications');
+    // Send push notification to customer
     const { sent, failed } = await sendPushNotification(
       order.customerId,
       '⏰ Lembrete de Pedido',

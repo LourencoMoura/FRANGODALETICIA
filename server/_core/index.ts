@@ -31,41 +31,58 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 
 const app = express();
 
-async function startServer() {
-  console.log(`[Lifecycle] [V1.1.4] STARTING BOOT... ENV: ${process.env.NODE_ENV || 'prod'}`);
-  const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  
-  console.log("[Lifecycle] Registering routes...");
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
-  // Mercado Pago Webhook
-  registerWebhookRoutes(app);
-  
-  console.log("[Lifecycle] Setting up tRPC...");
-  // tRPC API
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
+// Configure body parser with larger size limit for file uploads
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Global Error Handler for API routes (Rescue)
-  app.use("/api", (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(`[API ERROR] ${req.method} ${req.url}:`, err);
-    res.status(500).json({
-      error: {
-        message: "Ocorreu um erro interno no servidor.",
-        code: "INTERNAL_SERVER_ERROR",
-        details: process.env.NODE_ENV === "development" ? err.message : undefined
-      }
-    });
+// Global Health Check (Diagnostics)
+app.get("/api/ping", (_req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString(), env: process.env.NODE_ENV });
+});
+
+app.get("/api/db-test", async (_req, res) => {
+  try {
+    const { getDb } = await import("../db");
+    const db = await getDb();
+    if (!db) throw new Error("Banco de dados não disponível.");
+    res.json({ status: "connected" });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+console.log("[Lifecycle] Registering routes...");
+// OAuth callback under /api/oauth/callback
+registerOAuthRoutes(app);
+// Mercado Pago Webhook
+registerWebhookRoutes(app);
+
+console.log("[Lifecycle] Setting up tRPC...");
+// tRPC API
+app.use(
+  "/api/trpc",
+  createExpressMiddleware({
+    router: appRouter,
+    createContext,
+  })
+);
+
+// Global Error Handler for API routes (Rescue)
+app.use("/api", (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(`[API ERROR] ${req.method} ${req.url}:`, err);
+  res.status(500).json({
+    error: {
+      message: "Ocorreu um erro interno no servidor.",
+      code: "INTERNAL_SERVER_ERROR",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined
+    }
   });
+});
 
+async function startServer() {
+  console.log(`[Lifecycle] STARTING BOOT... VERCEL: ${!!process.env.VERCEL}`);
+  const server = createServer(app);
+  
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
