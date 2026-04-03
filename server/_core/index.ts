@@ -4,8 +4,7 @@ import { createServer } from "http";
 import net from "net";
 import { sql } from "drizzle-orm";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { serveStatic, setupVite } from "./vite.js";
-import { initializeReminders } from "../reminder-scheduler.js";
+// Removidos imports estáticos de vite.js para evitar erro de inicialização na Vercel
 import { registerWebhookRoutes } from "../mp-webhook.js";
 import { registerOAuthRoutes } from "./oauth.js";
 import { appRouter } from "../routers.js";
@@ -136,9 +135,11 @@ async function startServer() {
   const server = createServer(app);
 
   // development mode uses Vite, production mode uses static files
-  if (process.env.NODE_ENV === "development") {
+  if (!process.env.VERCEL && process.env.NODE_ENV === "development") {
+    const { setupVite } = await import("./vite.js");
     await setupVite(app, server);
   } else {
+    const { serveStatic } = await import("./vite.js");
     serveStatic(app);
   }
 
@@ -151,10 +152,15 @@ async function startServer() {
       console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
     }
 
-    server.listen(port, () => {
+    server.listen(port, async () => {
       console.log(`Server running on http://localhost:${port}/`);
-      // Initialize reminders for pending orders
-      initializeReminders().catch(console.error);
+      // Initialize reminders for pending orders - Dynamic import to keep production bundle lean
+      try {
+        const { initializeReminders } = await import("../reminder-scheduler.js");
+        await initializeReminders();
+      } catch (err) {
+        console.error("[Reminders] Failed to initialize:", err);
+      }
     });
   } else {
     console.log("[Vercel] Booting in serverless mode. Background tasks disabled.");
