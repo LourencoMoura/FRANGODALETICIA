@@ -79,7 +79,7 @@ class SDKServer {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      
+
       const { openId, appId, name } = payload as Record<string, unknown>;
 
       if (!isNonEmptyString(openId)) {
@@ -101,7 +101,7 @@ class SDKServer {
   async authenticateRequest(req: Request): Promise<User> {
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = cookies.get(COOKIE_NAME);
-    
+
     if (!sessionCookie) {
       throw ForbiddenError("Sessão não encontrada");
     }
@@ -115,7 +115,9 @@ class SDKServer {
     const user = await db.getUserByOpenId(session.openId);
 
     if (!user) {
-      console.error(`[Auth] User not found in DB for openId: ${session.openId}`);
+      console.error(
+        `[Auth] User not found in DB for openId: ${session.openId}`
+      );
       throw ForbiddenError("Usuário não encontrado");
     }
 

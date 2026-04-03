@@ -1,5 +1,9 @@
-import webpush from 'web-push';
-import { getPushSubscriptions, getAllPushSubscriptions, deletePushSubscription } from './db.js';
+import webpush from "web-push";
+import {
+  getPushSubscriptions,
+  getAllPushSubscriptions,
+  deletePushSubscription,
+} from "./db.js";
 
 // Configure VAPID
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY;
@@ -7,7 +11,7 @@ const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 if (vapidPublicKey && vapidPrivateKey) {
   webpush.setVapidDetails(
-    'mailto:frango@leticia.com',
+    "mailto:frango@leticia.com",
     vapidPublicKey,
     vapidPrivateKey
   );
@@ -39,8 +43,8 @@ export async function sendPushNotification(
         const payload = JSON.stringify({
           title,
           body,
-          icon: icon || '/icon-192x192.png',
-          badge: badge || '/badge-72x72.png',
+          icon: icon || "/icon-192x192.png",
+          badge: badge || "/badge-72x72.png",
           tag: `notification-${Date.now()}`,
           requireInteraction: false,
         });
@@ -72,7 +76,7 @@ export async function sendPushNotification(
 
     return { sent, failed };
   } catch (error) {
-    console.error('Error sending push notification:', error);
+    console.error("Error sending push notification:", error);
     return { sent: 0, failed: 1 };
   }
 }
@@ -90,7 +94,7 @@ export async function sendBroadcastPushNotification(
     const subscriptions = await getAllPushSubscriptions();
 
     if (!subscriptions || subscriptions.length === 0) {
-      console.log('No push subscriptions found');
+      console.log("No push subscriptions found");
       return { sent: 0, failed: 0 };
     }
 
@@ -102,8 +106,8 @@ export async function sendBroadcastPushNotification(
         const payload = JSON.stringify({
           title,
           body,
-          icon: icon || '/icon-192x192.png',
-          badge: badge || '/badge-72x72.png',
+          icon: icon || "/icon-192x192.png",
+          badge: badge || "/badge-72x72.png",
           tag: `notification-${Date.now()}`,
           requireInteraction: false,
         });
@@ -120,10 +124,15 @@ export async function sendBroadcastPushNotification(
         );
 
         sent++;
-        console.log(`✅ Broadcast notification sent to customer ${sub.customerId}`);
+        console.log(
+          `✅ Broadcast notification sent to customer ${sub.customerId}`
+        );
       } catch (error: any) {
         failed++;
-        console.error(`❌ Failed to send broadcast notification:`, error.message);
+        console.error(
+          `❌ Failed to send broadcast notification:`,
+          error.message
+        );
 
         // If subscription is invalid, delete it
         if (error.statusCode === 410 || error.statusCode === 404) {
@@ -135,7 +144,7 @@ export async function sendBroadcastPushNotification(
 
     return { sent, failed };
   } catch (error) {
-    console.error('Error sending broadcast push notification:', error);
+    console.error("Error sending broadcast push notification:", error);
     return { sent: 0, failed: 1 };
   }
 }
@@ -149,30 +158,30 @@ export async function sendStatusUpdateNotification(
   orderId: number
 ) {
   const statusMessages: Record<string, { title: string; body: string }> = {
-    'pedido-recebido': {
-      title: '⏳ Pedido Recebido!',
-      body: 'Estamos preparando seu frango 🍗',
+    "pedido-recebido": {
+      title: "⏳ Pedido Recebido!",
+      body: "Estamos preparando seu frango 🍗",
     },
-    'preparando': {
-      title: '🍳 Preparando seu Pedido',
-      body: 'Seu frango está sendo preparado com muito cuidado!',
+    preparando: {
+      title: "🍳 Preparando seu Pedido",
+      body: "Seu frango está sendo preparado com muito cuidado!",
     },
-    'pronto': {
-      title: '✅ Pronto!',
-      body: 'Seu pedido está pronto para retirada/entrega',
+    pronto: {
+      title: "✅ Pronto!",
+      body: "Seu pedido está pronto para retirada/entrega",
     },
-    'saiu-para-entrega': {
-      title: '🚚 Saiu para Entrega!',
-      body: 'Seu pedido está a caminho. Chegando em breve!',
+    "saiu-para-entrega": {
+      title: "🚚 Saiu para Entrega!",
+      body: "Seu pedido está a caminho. Chegando em breve!",
     },
-    'entregue': {
-      title: '✨ Pedido Entregue!',
-      body: 'Obrigado pela preferência! Aproveite seu frango 🍗',
+    entregue: {
+      title: "✨ Pedido Entregue!",
+      body: "Obrigado pela preferência! Aproveite seu frango 🍗",
     },
   };
 
   const message = statusMessages[status] || {
-    title: 'Atualização de Pedido',
+    title: "Atualização de Pedido",
     body: `Seu pedido foi atualizado para: ${status}`,
   };
 
@@ -186,10 +195,18 @@ export async function sendPromotionNotification(
   title: string,
   description: string,
   discount: number,
-  discountType: 'percentual' | 'fixo'
+  discountType: "percentual" | "fixo"
 ) {
-  const discountText = discountType === 'percentual' ? `${discount}%` : `R$ ${discount.toFixed(2)}`;
+  const discountText =
+    discountType === "percentual"
+      ? `${discount}%`
+      : `R$ ${discount.toFixed(2)}`;
   const body = `${description} - Desconto de ${discountText}! 🎉`;
 
-  return sendBroadcastPushNotification(title, body, '/icon-192x192.png', '/badge-72x72.png');
+  return sendBroadcastPushNotification(
+    title,
+    body,
+    "/icon-192x192.png",
+    "/badge-72x72.png"
+  );
 }

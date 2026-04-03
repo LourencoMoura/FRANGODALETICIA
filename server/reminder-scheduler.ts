@@ -1,8 +1,8 @@
-import { eq, ne } from 'drizzle-orm';
-import { orders } from '../drizzle/schema';
-import webpush from 'web-push';
-import { getDb } from './db.js';
-import { sendPushNotification } from './push-notifications.js';
+import { eq, ne } from "drizzle-orm";
+import { orders } from "../drizzle/schema";
+import webpush from "web-push";
+import { getDb } from "./db.js";
+import { sendPushNotification } from "./push-notifications.js";
 
 // Configure VAPID
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY;
@@ -10,7 +10,7 @@ const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 if (vapidPublicKey && vapidPrivateKey) {
   webpush.setVapidDetails(
-    'mailto:frango@leticia.com',
+    process.env.VAPID_SUBJECT || "mailto:admin@itwf.dev",
     vapidPublicKey,
     vapidPrivateKey
   );
@@ -27,10 +27,14 @@ export async function scheduleReminder(orderId: number) {
   try {
     const db = await getDb();
     if (!db) return;
-    
+
     // Get order details using Drizzle ORM
-    const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-    
+    const result = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId))
+      .limit(1);
+
     if (!result || result.length === 0) {
       console.error(`[Reminder] Order ${orderId} not found`);
       return;
@@ -41,9 +45,9 @@ export async function scheduleReminder(orderId: number) {
     // Calculate reminder time (15 minutes before)
     let reminderTime: Date | null = null;
 
-    if (order.tipo === 'retirada' && order.horarioRetirada) {
+    if (order.tipo === "retirada" && order.horarioRetirada) {
       // Parse time from horarioRetirada (format: HH:MM)
-      const [hours, minutes] = order.horarioRetirada.split(':').map(Number);
+      const [hours, minutes] = order.horarioRetirada.split(":").map(Number);
       reminderTime = new Date();
       reminderTime.setHours(hours, minutes - 15, 0, 0);
 
@@ -51,14 +55,16 @@ export async function scheduleReminder(orderId: number) {
       if (reminderTime < new Date()) {
         reminderTime.setDate(reminderTime.getDate() + 1);
       }
-    } else if (order.tipo === 'entrega') {
+    } else if (order.tipo === "entrega") {
       // For delivery, assume it will be delivered within 30 minutes
       // Schedule reminder for 15 minutes from now
       reminderTime = new Date(Date.now() + 15 * 60 * 1000);
     }
 
     if (!reminderTime) {
-      console.error(`[Reminder] Could not calculate reminder time for order ${orderId}`);
+      console.error(
+        `[Reminder] Could not calculate reminder time for order ${orderId}`
+      );
       return;
     }
 
@@ -72,6 +78,11 @@ export async function scheduleReminder(orderId: number) {
 
     if (delay > 0) {
       // Schedule the reminder
+      if (process.env.VERCEL) {
+        console.warn(
+          `[Reminder] Warning: setTimeout may not persist on Vercel for order ${orderId}`
+        );
+      }
       const timeoutId = setTimeout(async () => {
         await sendReminderNotification(orderId);
         scheduledReminders.delete(orderId);
@@ -96,12 +107,18 @@ async function sendReminderNotification(orderId: number) {
   try {
     const db = await getDb();
     if (!db) return;
-    
+
     // Get order details using Drizzle ORM
-    const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-    
+    const result = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId))
+      .limit(1);
+
     if (!result || result.length === 0) {
-      console.error(`[Reminder] Order ${orderId} not found during notification`);
+      console.error(
+        `[Reminder] Order ${orderId} not found during notification`
+      );
       return;
     }
 
@@ -111,15 +128,20 @@ async function sendReminderNotification(orderId: number) {
     // Send push notification to customer
     const { sent, failed } = await sendPushNotification(
       order.customerId,
-      '⏰ Lembrete de Pedido',
-      'Seu pedido está chegando em breve! Fique atento! 🍗',
-      '/icon-192x192.png',
-      '/badge-72x72.png'
+      "⏰ Lembrete de Pedido",
+      "Seu pedido está chegando em breve! Fique atento! 🍗",
+      "/icon-192x192.png",
+      "/badge-72x72.png"
     );
 
-    console.log(`[Reminder] Sent for order ${orderId}: ${sent} sent, ${failed} failed`);
+    console.log(
+      `[Reminder] Sent for order ${orderId}: ${sent} sent, ${failed} failed`
+    );
   } catch (error) {
-    console.error(`[Reminder] Error sending notification for order ${orderId}:`, error);
+    console.error(
+      `[Reminder] Error sending notification for order ${orderId}:`,
+      error
+    );
   }
 }
 
@@ -139,19 +161,24 @@ export function cancelReminder(orderId: number) {
  */
 export async function initializeReminders() {
   try {
-    console.log('[Reminder] Initializing pending orders...');
+    console.log("[Reminder] Initializing pending orders...");
 
     const db = await getDb();
     if (!db) {
-        console.warn("[Reminder] Skipping initialization: database not available");
-        return;
+      console.warn(
+        "[Reminder] Skipping initialization: database not available"
+      );
+      return;
     }
-    
+
     // Get all orders that are not yet delivered using Drizzle ORM
-    const pendingOrders = await db.select().from(orders).where(ne(orders.status, 'entregue'));
+    const pendingOrders = await db
+      .select()
+      .from(orders)
+      .where(ne(orders.status, "entregue"));
 
     if (!pendingOrders || pendingOrders.length === 0) {
-      console.log('[Reminder] No pending orders found');
+      console.log("[Reminder] No pending orders found");
       return;
     }
 
@@ -162,6 +189,6 @@ export async function initializeReminders() {
 
     console.log(`[Reminder] Initialized ${pendingOrders.length} orders`);
   } catch (error) {
-    console.error('[Reminder] Error during initialization:', error);
+    console.error("[Reminder] Error during initialization:", error);
   }
 }

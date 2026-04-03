@@ -90,16 +90,12 @@
         "admins_email_unique": {
           "name": "admins_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "admins_whatsapp_unique": {
           "name": "admins_whatsapp_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "whatsapp"
-          ]
+          "columns": ["whatsapp"]
         }
       },
       "policies": {},
@@ -686,10 +682,7 @@
     "public.admin_role": {
       "name": "admin_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "super_admin"
-      ]
+      "values": ["admin", "super_admin"]
     },
     "public.order_status": {
       "name": "order_status",
@@ -706,26 +699,17 @@
     "public.order_tipo": {
       "name": "order_tipo",
       "schema": "public",
-      "values": [
-        "entrega",
-        "retirada"
-      ]
+      "values": ["entrega", "retirada"]
     },
     "public.promotion_tipo": {
       "name": "promotion_tipo",
       "schema": "public",
-      "values": [
-        "percentual",
-        "fixo"
-      ]
+      "values": ["percentual", "fixo"]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "user",
-        "admin"
-      ]
+      "values": ["user", "admin"]
     }
   },
   "schemas": {},

@@ -1,7 +1,19 @@
-import { publicProcedure, router, protectedProcedure, adminProcedure } from './_core/trpc.js';
-import { z } from 'zod';
-import { savePushSubscription as saveSubscription, getAllPushSubscriptions } from './db.js';
-import { sendPushNotification, sendPromotionNotification, sendBroadcastPushNotification } from './push-notifications.js';
+import {
+  publicProcedure,
+  router,
+  protectedProcedure,
+  adminProcedure,
+} from "./_core/trpc.js";
+import { z } from "zod";
+import {
+  savePushSubscription as saveSubscription,
+  getAllPushSubscriptions,
+} from "./db.js";
+import {
+  sendPushNotification,
+  sendPromotionNotification,
+  sendBroadcastPushNotification,
+} from "./push-notifications.js";
 
 export const pushRouter = router({
   // Salvar subscrição de um cliente (vínculo automático com a sessão)
@@ -20,16 +32,18 @@ export const pushRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        if (!ctx.user || ctx.user.role !== 'user') {
-          throw new Error("Apenas clientes podem se inscrever para notificações");
+        if (!ctx.user || ctx.user.role !== "user") {
+          throw new Error(
+            "Apenas clientes podem se inscrever para notificações"
+          );
         }
-        const customerId = parseInt(ctx.user.openId.split(':')[1]);
+        const customerId = parseInt(ctx.user.openId.split(":")[1]);
         if (isNaN(customerId)) throw new Error("Sessão inválida");
 
         await saveSubscription(customerId, input.subscription);
-        return { success: true, message: 'Subscrição salva com sucesso' };
+        return { success: true, message: "Subscrição salva com sucesso" };
       } catch (error) {
-        console.error('Erro ao salvar subscrição push:', error);
+        console.error("Erro ao salvar subscrição push:", error);
         throw error;
       }
     }),
@@ -39,11 +53,11 @@ export const pushRouter = router({
     .input(z.object({ endpoint: z.string() }))
     .mutation(async ({ input }) => {
       try {
-        const { deletePushSubscription } = await import('./db.js');
+        const { deletePushSubscription } = await import("./db.js");
         await deletePushSubscription(input.endpoint);
-        return { success: true, message: 'Subscrição removida do servidor' };
+        return { success: true, message: "Subscrição removida do servidor" };
       } catch (error) {
-        console.error('Erro ao remover subscrição push:', error);
+        console.error("Erro ao remover subscrição push:", error);
         throw error;
       }
     }),
@@ -59,10 +73,14 @@ export const pushRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        const result = await sendPushNotification(input.customerId, input.title, input.body);
+        const result = await sendPushNotification(
+          input.customerId,
+          input.title,
+          input.body
+        );
         return { success: true, ...result };
       } catch (error) {
-        console.error('Erro ao enviar push pro usuário:', error);
+        console.error("Erro ao enviar push pro usuário:", error);
         throw error;
       }
     }),
@@ -74,7 +92,7 @@ export const pushRouter = router({
         title: z.string(),
         description: z.string(),
         discount: z.number(),
-        discountType: z.enum(['percentual', 'fixo']),
+        discountType: z.enum(["percentual", "fixo"]),
       })
     )
     .mutation(async ({ input }) => {
@@ -87,7 +105,7 @@ export const pushRouter = router({
         );
         return { success: true, ...result };
       } catch (error) {
-        console.error('Erro ao enviar push de promoção:', error);
+        console.error("Erro ao enviar push de promoção:", error);
         throw error;
       }
     }),

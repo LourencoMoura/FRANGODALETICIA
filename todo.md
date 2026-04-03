@@ -50,7 +50,7 @@
 
 ## Frontend - Admin Dashboard
 
-- [x] Criar login administrativo (LeticiaAdmin / LeticiaAdmin57*)
+- [x] Criar login administrativo (LeticiaAdmin / LeticiaAdmin57\*)
 - [x] Listar todos os pedidos com status
 - [x] Atualizar status do pedido
 - [x] Visualizar detalhes do cliente
@@ -149,7 +149,7 @@
 3. ✅ Banco de dados Supabase integrado com 7 tabelas
 4. ✅ PWA completo com manifest e Service Worker
 5. ✅ Notificações Web Push com VAPID configurado
-6. ✅ Painel administrativo seguro (LeticiaAdmin / LeticiaAdmin57*)
+6. ✅ Painel administrativo seguro (LeticiaAdmin / LeticiaAdmin57\*)
 7. ✅ Histórico de pedidos do cliente com opção de repetir
 8. ✅ Design moderno com gradiente laranja/âmbar
 9. ✅ Logo personalizado "Frango Assado da Letícia" em todos os lugares
@@ -166,7 +166,7 @@
 ### Admin
 
 - Username: LeticiaAdmin
-- Password: LeticiaAdmin57*
+- Password: LeticiaAdmin57\*
 - Acesso: Clique em "site seguro" (com escudo) no header
 
 ### Supabase
@@ -376,6 +376,7 @@
 ### Status Final
 
 ✅ **Notificações Push 100% Implementadas e Testadas**
+
 - Sistema pronto para produção
 - Testes passando (17/17)
 - Servidor compilando sem erros

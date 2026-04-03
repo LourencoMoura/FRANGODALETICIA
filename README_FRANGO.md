@@ -5,6 +5,7 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 ## ✨ Funcionalidades
 
 ### 🛒 Sistema de Pedidos
+
 - ✅ Formulário de login com WhatsApp, nome e apelido
 - ✅ Seleção de produtos (Frango Inteiro, Banda, Linguiça)
 - ✅ Cálculo automático de taxa de entrega
@@ -12,6 +13,7 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 - ✅ Integração com Supabase PostgreSQL
 
 ### 📱 PWA Completo
+
 - ✅ Manifest.json com configuração de app
 - ✅ Service Worker para offline support
 - ✅ Ícones em múltiplos tamanhos (192x192, 512x512)
@@ -19,6 +21,7 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 - ✅ Funciona offline
 
 ### 🔔 Notificações Web Push
+
 - ✅ Configuração VAPID segura
 - ✅ Subscrição de clientes
 - ✅ Envio de notificações em tempo real
@@ -26,6 +29,7 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 - ✅ Promoções e alertas
 
 ### 🎨 Design Moderno
+
 - ✅ Gradiente laranja/âmbar profissional
 - ✅ Responsivo para mobile e desktop
 - ✅ Micro-interações suaves
@@ -33,11 +37,13 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 - ✅ Tipografia clara e legível
 
 ### 💳 Integração Mercado Pago
+
 - ✅ Preparado para integração
 - ✅ Status de pagamento rastreado
 - ✅ Webhooks para confirmação
 
 ### 🔐 Segurança
+
 - ✅ Row Level Security (RLS) no Supabase
 - ✅ Autenticação segura
 - ✅ Dados criptografados
@@ -46,6 +52,7 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 ## 🚀 Início Rápido
 
 ### Pré-requisitos
+
 - Node.js 18+
 - pnpm
 - Conta Supabase
@@ -54,11 +61,13 @@ Um aplicativo web progressivo (PWA) profissional e moderno para pedidos online d
 ### Instalação
 
 1. **Clone ou extraia o projeto**
+
 ```bash
 cd frango-da-leticia-v2
 ```
 
 2. **Instale as dependências**
+
 ```bash
 pnpm install
 ```
@@ -83,11 +92,13 @@ MERCADO_PAGO_PUBLIC_KEY=sua_chave_publica_aqui
 ```
 
 4. **Inicie o servidor de desenvolvimento**
+
 ```bash
 pnpm dev
 ```
 
 5. **Acesse a aplicação**
+
 ```
 http://localhost:3000
 ```
@@ -123,6 +134,7 @@ frango-da-leticia-v2/
 ## 🗄️ Banco de Dados
 
 ### Tabelas Criadas
+
 - `customers` - Clientes com WhatsApp, nome, apelido
 - `products` - Produtos (Frango Inteiro, Banda, Linguiça)
 - `orders` - Pedidos com status e informações de entrega
@@ -132,6 +144,7 @@ frango-da-leticia-v2/
 - `admins` - Usuários administrativos
 
 ### Executar Schema
+
 O schema foi executado no Supabase SQL Editor. Se precisar executar novamente:
 
 1. Acesse [supabase.com](https://supabase.com)
@@ -142,6 +155,7 @@ O schema foi executado no Supabase SQL Editor. Se precisar executar novamente:
 ## 🔔 Notificações Push
 
 ### Como Funciona
+
 1. Usuário clica em "Habilitar Notificações"
 2. Service Worker é registrado
 3. Subscrição é enviada para o servidor
@@ -149,6 +163,7 @@ O schema foi executado no Supabase SQL Editor. Se precisar executar novamente:
 5. Admin pode enviar notificações em tempo real
 
 ### Testar Notificações
+
 ```bash
 # Enviar notificação para usuário específico
 curl -X POST http://localhost:3000/api/trpc/push.sendToUser \
@@ -163,12 +178,14 @@ curl -X POST http://localhost:3000/api/trpc/push.sendToUser \
 ## 💳 Integração Mercado Pago
 
 ### Configuração
+
 1. Crie conta em [mercadopago.com](https://www.mercadopago.com.br)
 2. Obtenha suas credenciais
 3. Configure as variáveis de ambiente
 4. Implemente o webhook para confirmação de pagamento
 
 ### Fluxo
+
 1. Cliente cria pedido
 2. Clica em "Pagar com Mercado Pago"
 3. Redirecionado para checkout
@@ -178,16 +195,20 @@ curl -X POST http://localhost:3000/api/trpc/push.sendToUser \
 ## 🎨 Personalização
 
 ### Cores
+
 Edite `client/src/index.css` para mudar o tema:
+
 ```css
 :root {
-  --primary: oklch(0.65 0.2 40);  /* Laranja */
-  --accent: oklch(0.65 0.2 40);   /* Âmbar */
+  --primary: oklch(0.65 0.2 40); /* Laranja */
+  --accent: oklch(0.65 0.2 40); /* Âmbar */
 }
 ```
 
 ### Produtos
+
 Edite `client/src/pages/Home.tsx` para adicionar/remover produtos:
+
 ```typescript
 const PRODUCTS: Product[] = [
   { id: 1, name: "Frango Inteiro", price: 30, description: "..." },
@@ -196,7 +217,9 @@ const PRODUCTS: Product[] = [
 ```
 
 ### Taxa de Entrega
+
 Edite `client/src/pages/Home.tsx` para mudar a taxa:
+
 ```typescript
 const taxa = tipo === "entrega" && localidade !== "guamare" ? 5 : 0;
 ```
@@ -204,16 +227,19 @@ const taxa = tipo === "entrega" && localidade !== "guamare" ? 5 : 0;
 ## 📦 Build e Deploy
 
 ### Build para Produção
+
 ```bash
 pnpm build
 ```
 
 ### Iniciar em Produção
+
 ```bash
 pnpm start
 ```
 
 ### Deploy no Manus
+
 1. Crie um checkpoint no Management UI
 2. Clique em **Publish**
 3. Configure domínio customizado (opcional)
@@ -222,11 +248,13 @@ pnpm start
 ## 🧪 Testes
 
 ### Executar Testes
+
 ```bash
 pnpm test
 ```
 
 ### Testes Inclusos
+
 - ✅ Configuração Supabase
 - ✅ Chaves VAPID
 - ✅ Logout (exemplo)
@@ -234,12 +262,14 @@ pnpm test
 ## 📱 Instalar como App
 
 ### No Android
+
 1. Abra o site no Chrome
 2. Clique em "Instalar" (ou menu → "Instalar app")
 3. Confirme
 4. App aparecerá na home screen
 
 ### No iOS
+
 1. Abra o site no Safari
 2. Clique em "Compartilhar"
 3. Selecione "Adicionar à tela inicial"
@@ -249,16 +279,19 @@ pnpm test
 ## 🐛 Troubleshooting
 
 ### Service Worker não registra
+
 - Verifique se o site está em HTTPS (ou localhost)
 - Limpe cache do navegador
 - Verifique console do navegador
 
 ### Notificações não funcionam
+
 - Verifique permissão de notificações
 - Confirme chaves VAPID configuradas
 - Verifique logs do servidor
 
 ### Pedidos não salvam
+
 - Confirme conexão com Supabase
 - Verifique credenciais no `.env`
 - Verifique schema do banco de dados
@@ -266,6 +299,7 @@ pnpm test
 ## 📞 Suporte
 
 Para dúvidas ou problemas:
+
 1. Verifique os logs do servidor
 2. Verifique console do navegador
 3. Consulte documentação do Supabase

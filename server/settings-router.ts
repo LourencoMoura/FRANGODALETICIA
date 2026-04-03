@@ -8,7 +8,8 @@ export const settingsRouter = router({
   // Retorna configurações públicas (WhatsApp, Nome da Loja, etc)
   getPublicSettings: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { whatsapp: "5584999589480", storeName: "Frango da Letícia" };
+    if (!db)
+      return { whatsapp: "5584999589480", storeName: "Frango da Letícia" };
 
     const whatsapp = await db.query.settings.findFirst({
       where: eq(settings.key, "whatsapp_suporte"),
@@ -35,19 +36,22 @@ export const settingsRouter = router({
 
   // Atualiza ou insere uma configuração (admin only)
   updateSetting: adminProcedure
-    .input(z.object({
-      key: z.string(),
-      value: z.string(),
-    }))
+    .input(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      })
+    )
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not connected");
 
-      await db.insert(settings)
+      await db
+        .insert(settings)
         .values({ key: input.key, value: input.value })
-        .onConflictDoUpdate({ 
-          target: settings.key, 
-          set: { value: input.value } 
+        .onConflictDoUpdate({
+          target: settings.key,
+          set: { value: input.value },
         });
 
       return { success: true };
@@ -55,20 +59,25 @@ export const settingsRouter = router({
 
   // Atualiza múltiplas configurações de uma vez (admin only)
   updateBatch: adminProcedure
-    .input(z.array(z.object({
-      key: z.string(),
-      value: z.string(),
-    })))
+    .input(
+      z.array(
+        z.object({
+          key: z.string(),
+          value: z.string(),
+        })
+      )
+    )
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not connected");
 
       for (const item of input) {
-        await db.insert(settings)
+        await db
+          .insert(settings)
           .values({ key: item.key, value: item.value })
-          .onConflictDoUpdate({ 
-            target: settings.key, 
-            set: { value: item.value } 
+          .onConflictDoUpdate({
+            target: settings.key,
+            set: { value: item.value },
           });
       }
 

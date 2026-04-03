@@ -2,7 +2,18 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, ChefHat, ShoppingCart, Clock, MapPin, Bell, Flame, Shield, LogOut, Gift } from "lucide-react";
+import {
+  Loader2,
+  ChefHat,
+  ShoppingCart,
+  Clock,
+  MapPin,
+  Bell,
+  Flame,
+  Shield,
+  LogOut,
+  Gift,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -23,9 +34,24 @@ interface Product {
 }
 
 const PRODUCTS: Product[] = [
-  { id: 1, name: "Frango Inteiro", price: 30, description: "Frango assado inteiro, suculento e temperado" },
-  { id: 2, name: "Banda de Frango", price: 16, description: "Meia frango assado, perfeito para uma pessoa" },
-  { id: 3, name: "Linguiça Unid.", price: 3, description: "Linguiça grelhada, unidade" },
+  {
+    id: 1,
+    name: "Frango Inteiro",
+    price: 30,
+    description: "Frango assado inteiro, suculento e temperado",
+  },
+  {
+    id: 2,
+    name: "Banda de Frango",
+    price: 16,
+    description: "Meia frango assado, perfeito para uma pessoa",
+  },
+  {
+    id: 3,
+    name: "Linguiça Unid.",
+    price: 3,
+    description: "Linguiça grelhada, unidade",
+  },
 ];
 
 export default function Home() {
@@ -42,12 +68,12 @@ export default function Home() {
   const [mpPreferenceId, setMpPreferenceId] = useState<string | null>(null);
 
   // Push notifications
-  const { 
-    subscribe: subscribeToPush, 
+  const {
+    subscribe: subscribeToPush,
     unsubscribe: unsubscribeFromPush,
-    isSubscribed, 
+    isSubscribed,
     isSupported: isPushSupported,
-    isLoading: isPushLoading 
+    isLoading: isPushLoading,
   } = usePushNotifications();
 
   // Order state
@@ -74,19 +100,25 @@ export default function Home() {
 
   // For the auto-redirect effect
   const [targetOrderId, setTargetOrderId] = useState<number | null>(null);
-  const { data: autoOrderData, refetch: fetchAutoOrder } = trpc.orders.getById.useQuery(
-    { id: targetOrderId || 0 },
-    { enabled: false }
-  );
+  const { data: autoOrderData, refetch: fetchAutoOrder } =
+    trpc.orders.getById.useQuery(
+      { id: targetOrderId || 0 },
+      { enabled: false }
+    );
 
   const { data: publicSettings } = trpc.settings.getPublicSettings.useQuery();
-  const whatsappNumber = useMemo(() => publicSettings?.whatsapp || "5584999589480", [publicSettings]);
+  const whatsappNumber = useMemo(
+    () => publicSettings?.whatsapp || "5584999589480",
+    [publicSettings]
+  );
 
   // Calculate total
   useEffect(() => {
     let subtotal = 0;
     PRODUCTS.forEach(product => {
-      subtotal += (quantities[product.id as keyof typeof quantities] || 0) * product.price;
+      subtotal +=
+        (quantities[product.id as keyof typeof quantities] || 0) *
+        product.price;
     });
 
     let taxa = 0;
@@ -97,16 +129,35 @@ export default function Home() {
     setTotal(subtotal + taxa);
   }, [quantities, tipo, localidade]);
 
-  const checkNotificationStatus = () => {
-    // A lógica agora é gerida pelo hook usePushNotifications
-  };
+  // Auth synchronization
+  const { data: meData, isLoading: isMeLoading } = trpc.auth.me.useQuery(
+    undefined,
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const logoutMutation = trpc.auth.logout.useMutation();
+
+  useEffect(() => {
+    if (meData && meData.role === "user" && meData.openId.startsWith("customer:")) {
+      const id = parseInt(meData.openId.split(":")[1], 10);
+      if (!customerId) {
+        setCustomerId(id);
+        setNome(meData.name);
+        setApelido(meData.name.split(" ")[0]); // Fallback nickname if not in meData
+        setStep("order");
+      }
+    }
+  }, [meData, customerId]);
 
   const handleLoginSuccess = (id: number, name: string, nickname: string) => {
     setCustomerId(id);
     setNome(name);
     setApelido(nickname);
     setStep("order");
-    checkNotificationStatus();
+    // checkNotificationStatus(); // A lógica agora é gerida pelo hook usePushNotifications
   };
 
   const handleToggleNotifications = async () => {
@@ -126,17 +177,38 @@ export default function Home() {
     }
   };
 
-  const handleLogout = () => {
-    setCustomerId(null);
-    setNome("");
-    setApelido("");
-    setStep("order");
-    setShowHistory(false);
-    toast.success("Desconectado com sucesso");
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      setCustomerId(null);
+      setNome("");
+      setApelido("");
+      setStep("order");
+      setShowHistory(false);
+      toast.success("Desconectado com sucesso");
+    } catch (err) {
+      console.error("Erro ao fazer logout:", err);
+      // Ainda limpamos o estado local em caso de erro
+      setCustomerId(null);
+      setNome("");
+      setApelido("");
+    }
   };
 
   // 1. WhatsApp Message Builder Utility
-  const buildWhatsAppMessage = (id: number, customerName: string, customerNickname: string, orderTipo: string, orderLocalidade: string | undefined, orderEndereco: string | undefined, orderHorario: string | undefined, orderObs: string | undefined, orderItems: any[], orderTotal: number, isPaid: boolean) => {
+  const buildWhatsAppMessage = (
+    id: number,
+    customerName: string,
+    customerNickname: string,
+    orderTipo: string,
+    orderLocalidade: string | undefined,
+    orderEndereco: string | undefined,
+    orderHorario: string | undefined,
+    orderObs: string | undefined,
+    orderItems: any[],
+    orderTotal: number,
+    isPaid: boolean
+  ) => {
     let msg = `*FRANGO DA LETÍCIA* 🍗\n`;
     msg += ` --------------------------- \n`;
     msg += `🛍️ *PEDIDO:* #${id} \n`;
@@ -145,32 +217,32 @@ export default function Home() {
     msg += `*PAGAMENTO:* ${isPaid ? "JÁ ESTÁ PAGO! ✅" : "NA ENTREGA / RETIRADA 💵"} \n`;
     msg += `--------------------------- \n`;
     msg += `*ITENS DO PEDIDO:* \n`;
-    
+
     orderItems.forEach(item => {
-      msg += `🔹 ${String(item.quantity).padStart(2, '0')} x ${item.product_name || item.name}\n`;
+      msg += `🔹 ${String(item.quantity).padStart(2, "0")} x ${item.product_name || item.name}\n`;
     });
-    
+
     msg += ` --------------------------- \n`;
-    
+
     if (orderTipo === "entrega") {
       msg += `🛵 *ENTREGA:* ${orderLocalidade === "guamare" ? "Guamaré" : "Salina / Outras"}\n`;
     } else {
       msg += `🏪 *RETIRADA:* ${orderHorario}\n`;
     }
-    
+
     msg += ` 💰 *TOTAL:* R$ ${Number(orderTotal).toFixed(2)}\n`;
     msg += ` --------------------------- `;
-    
+
     return encodeURIComponent(msg);
   };
 
   // 2. URL Detector for Mercado Pago Back URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const paymentStatus = params.get('payment_status');
-    const orderIdParam = params.get('orderId');
+    const paymentStatus = params.get("payment_status");
+    const orderIdParam = params.get("orderId");
 
-    if (paymentStatus === 'approved' && orderIdParam && customerId) {
+    if (paymentStatus === "approved" && orderIdParam && customerId) {
       setTargetOrderId(Number(orderIdParam));
     }
   }, [customerId]);
@@ -196,11 +268,14 @@ export default function Home() {
               Number(data.total),
               true
             );
-            
+
             toast.success("Pagamento Confirmado! 🎉 Abrindo WhatsApp...");
-            
+
             setTimeout(() => {
-              window.open(`https://wa.me/${whatsappNumber}?text=${encodedMsg}`, "_blank");
+              window.open(
+                `https://wa.me/${whatsappNumber}?text=${encodedMsg}`,
+                "_blank"
+              );
               window.history.replaceState({}, document.title, "/");
               setTargetOrderId(null);
               setLoading(false);
@@ -236,14 +311,14 @@ export default function Home() {
     setLoading(true);
     try {
       // Build items array
-      const items = PRODUCTS
-        .filter(p => (quantities[p.id as keyof typeof quantities] || 0) > 0)
-        .map(p => ({
-          product_id: p.id,
-          product_name: p.name,
-          quantity: quantities[p.id as keyof typeof quantities] || 0,
-          unit_price: p.price,
-        }));
+      const items = PRODUCTS.filter(
+        p => (quantities[p.id as keyof typeof quantities] || 0) > 0
+      ).map(p => ({
+        product_id: p.id,
+        product_name: p.name,
+        quantity: quantities[p.id as keyof typeof quantities] || 0,
+        unit_price: p.price,
+      }));
 
       // Use tRPC mutation to create order (default to presencial initially)
       const orderResult = await createOrderMutation.mutateAsync({
@@ -255,7 +330,7 @@ export default function Home() {
         observacoes,
         items,
         total,
-        paymentMethod: 'presencial', // We will update this if they pay online
+        paymentMethod: "presencial", // We will update this if they pay online
       });
 
       if (!orderResult.success) {
@@ -278,20 +353,20 @@ export default function Home() {
       }
 
       // Subscribe to push notifications with customer ID
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
+      if ("serviceWorker" in navigator && "PushManager" in window) {
         try {
           const registration = await navigator.serviceWorker.ready;
           const subscription = await registration.pushManager.getSubscription();
-          
+
           if (subscription) {
             // Update subscription with customer ID
-            const authKey = subscription.getKey('auth');
-            const p256dhKey = subscription.getKey('p256dh');
-            
+            const authKey = subscription.getKey("auth");
+            const p256dhKey = subscription.getKey("p256dh");
+
             if (authKey && p256dhKey) {
               const authArray = Array.from(new Uint8Array(authKey));
               const p256dhArray = Array.from(new Uint8Array(p256dhKey));
-              
+
               // await pushSubscribeMutation.mutateAsync({
               //   endpoint: subscription.endpoint,
               //   keys: {
@@ -309,38 +384,43 @@ export default function Home() {
 
       // Build WhatsApp message
       let mensagem = `Cliente: ${nome} (${apelido})\nPedido #${orderId}\n\nOlá! Gostaria de fazer um pedido:\n\n`;
-      
+
       PRODUCTS.forEach(product => {
         const qty = quantities[product.id as keyof typeof quantities] || 0;
         if (qty > 0) {
           mensagem += `🍗 ${product.name}: ${qty}x R$ ${(product.price * qty).toFixed(2)}\n`;
         }
       });
-      
+
       mensagem += `\n📍 Tipo: ${tipo === "entrega" ? "Entrega" : "Retirada"}\n`;
-      
+
       if (tipo === "entrega") {
-        const localidadeNome = localidade === "guamare" ? "Guamaré (sem taxa)" : localidade === "salina_da_cruz" ? "Salina da Cruz (+R$ 5,00)" : "Outras localidades (+R$ 5,00)";
+        const localidadeNome =
+          localidade === "guamare"
+            ? "Guamaré (sem taxa)"
+            : localidade === "salina_da_cruz"
+              ? "Salina da Cruz (+R$ 5,00)"
+              : "Outras localidades (+R$ 5,00)";
         mensagem += `📍 Localidade: ${localidadeNome}\n`;
         mensagem += `📍 Endereço: ${endereco}\n`;
       } else {
         mensagem += `⏰ Horário: ${horarioRetirada}\n`;
       }
-      
+
       if (observacoes) {
         mensagem += `📝 Observações: ${observacoes}\n`;
       }
-      
+
       mensagem += `\n💰 Total: R$ ${total.toFixed(2)}\n\nObrigado!`;
-      
+
       // Encode message for WhatsApp
       const encodedMessage = encodeURIComponent(mensagem);
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-      
+
       setStep("confirmation");
       setLastOrderId(orderId);
       toast.success("Pedido registrado! 🎉");
-      
+
       // Reset form
       setQuantities({ 1: 0, 2: 0, 3: 0 });
       setEndereco("");
@@ -348,14 +428,15 @@ export default function Home() {
 
       // Optional: Generate payment preference automatically
       try {
-        const pref = await createPreferenceMutation.mutateAsync({ orderId: orderId! });
+        const pref = await createPreferenceMutation.mutateAsync({
+          orderId: orderId!,
+        });
         if (pref && pref.id) {
           setMpPreferenceId(pref.id);
         }
       } catch (e) {
         console.error("Erro ao gerar link de pagamento:", e);
       }
-      
     } catch (error) {
       console.error("Erro ao criar pedido:", error);
       toast.error("Erro ao criar pedido. Tente novamente.");
@@ -375,7 +456,7 @@ export default function Home() {
 
   const handleWhatsAppRedirect = async () => {
     if (!lastOrderId) return;
-    
+
     setLoading(true);
     try {
       const response = await fetchOrderById();
@@ -394,8 +475,11 @@ export default function Home() {
           Number(data.total),
           false // Presencial
         );
-        
-        window.open(`https://wa.me/${whatsappNumber}?text=${encodedMsg}`, "_blank");
+
+        window.open(
+          `https://wa.me/${whatsappNumber}?text=${encodedMsg}`,
+          "_blank"
+        );
         setStep("order");
       }
     } catch (err) {
@@ -405,12 +489,19 @@ export default function Home() {
     }
   };
 
+  // Show loading during initial auth check
+  if (isMeLoading && !customerId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-10 h-10 animate-spin text-orange-600" />
+      </div>
+    );
+  }
+
   // Show auth page if not logged in
   if (!customerId) {
     return <AuthPage onLoginSuccess={handleLoginSuccess} />;
   }
-
-
 
   // Fetch customer details to get points
   const { data: customerData } = trpc.customers.getById.useQuery(
@@ -424,7 +515,6 @@ export default function Home() {
       points={customerData?.points || 0}
       onLogout={handleLogout}
     >
-
       {/* Main Content */}
       <div className="container py-8">
         {showHistory && customerId && nome ? (
@@ -432,7 +522,7 @@ export default function Home() {
             customerId={customerId}
             customerName={nome}
             onBack={() => setShowHistory(false)}
-            onRepeatOrder={(order) => {
+            onRepeatOrder={order => {
               toast.info("Funcionalidade em desenvolvimento");
             }}
           />
@@ -454,17 +544,21 @@ export default function Home() {
                           disabled={isPushLoading}
                           onClick={handleToggleNotifications}
                           className={`gap-2 transition-all duration-300 ${
-                            isSubscribed 
-                              ? "border-green-600 text-green-600 hover:bg-green-50 shadow-sm" 
+                            isSubscribed
+                              ? "border-green-600 text-green-600 hover:bg-green-50 shadow-sm"
                               : "border-orange-600 text-orange-600 hover:bg-orange-50"
                           }`}
                         >
                           {isPushLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Bell className={`w-4 h-4 ${isSubscribed ? "fill-current" : ""}`} />
+                            <Bell
+                              className={`w-4 h-4 ${isSubscribed ? "fill-current" : ""}`}
+                            />
                           )}
-                          {isSubscribed ? "Notificações Ativas" : "Habilitar Notificações"}
+                          {isSubscribed
+                            ? "Notificações Ativas"
+                            : "Habilitar Notificações"}
                         </Button>
                       )}
                       <Button
@@ -481,40 +575,63 @@ export default function Home() {
                   {/* Badge de horario de entregas */}
                   <div className="mb-6 p-3 bg-orange-50 border-2 border-orange-200 rounded-lg flex items-center gap-2">
                     <Clock className="w-5 h-5 text-orange-600" />
-                    <p className="text-sm font-semibold text-orange-700">Entregas a partir de 11:50</p>
+                    <p className="text-sm font-semibold text-orange-700">
+                      Entregas a partir de 11:50
+                    </p>
                   </div>
 
                   {/* Products */}
                   <div className="space-y-4 mb-6">
                     {PRODUCTS.map(product => (
-                      <Card key={product.id} className="p-4 border-2 border-orange-200 hover:border-orange-400 transition-colors">
+                      <Card
+                        key={product.id}
+                        className="p-4 border-2 border-orange-200 hover:border-orange-400 transition-colors"
+                      >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h3 className="font-bold text-gray-800">{product.name}</h3>
-                            <p className="text-sm text-gray-600">{product.description}</p>
+                            <h3 className="font-bold text-gray-800">
+                              {product.name}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {product.description}
+                            </p>
                           </div>
-                          <p className="text-lg font-bold text-orange-600">R$ {product.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-orange-600">
+                            R$ {product.price.toFixed(2)}
+                          </p>
                         </div>
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
-                            onClick={() => setQuantities(prev => ({
-                              ...prev,
-                              [product.id]: Math.max(0, (prev[product.id as keyof typeof prev] || 0) - 1)
-                            }))}
+                            onClick={() =>
+                              setQuantities(prev => ({
+                                ...prev,
+                                [product.id]: Math.max(
+                                  0,
+                                  (prev[product.id as keyof typeof prev] || 0) -
+                                    1
+                                ),
+                              }))
+                            }
                             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors"
                           >
                             −
                           </button>
                           <span className="w-8 text-center font-bold">
-                            {quantities[product.id as keyof typeof quantities] || 0}
+                            {quantities[
+                              product.id as keyof typeof quantities
+                            ] || 0}
                           </span>
                           <button
                             type="button"
-                            onClick={() => setQuantities(prev => ({
-                              ...prev,
-                              [product.id]: (prev[product.id as keyof typeof prev] || 0) + 1
-                            }))}
+                            onClick={() =>
+                              setQuantities(prev => ({
+                                ...prev,
+                                [product.id]:
+                                  (prev[product.id as keyof typeof prev] || 0) +
+                                  1,
+                              }))
+                            }
                             className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
                           >
                             +
@@ -526,7 +643,9 @@ export default function Home() {
 
                   {/* Delivery Type */}
                   <div className="mb-6 border-t-2 border-orange-200 pt-6">
-                    <h3 className="font-bold text-gray-800 mb-4">Tipo de Entrega</h3>
+                    <h3 className="font-bold text-gray-800 mb-4">
+                      Tipo de Entrega
+                    </h3>
                     <div className="space-y-3">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
@@ -534,7 +653,7 @@ export default function Home() {
                           name="tipo"
                           value="entrega"
                           checked={tipo === "entrega"}
-                          onChange={(e) => setTipo(e.target.value as OrderType)}
+                          onChange={e => setTipo(e.target.value as OrderType)}
                           className="w-4 h-4"
                         />
                         <span className="text-gray-700">Entrega</span>
@@ -542,25 +661,37 @@ export default function Home() {
                       {tipo === "entrega" && (
                         <div className="ml-7 space-y-3">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Localidade</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Localidade
+                            </label>
                             <select
                               value={localidade}
                               title="Localidade"
-                              onChange={(e) => setLocalidade(e.target.value as Localidade)}
+                              onChange={e =>
+                                setLocalidade(e.target.value as Localidade)
+                              }
                               className="w-full px-3 py-2 border-2 border-orange-200 rounded focus:outline-none focus:border-orange-500"
                             >
-                              <option value="guamare">Guamaré (sem taxa)</option>
-                              <option value="salina_da_cruz">Salina da Cruz (+R$ 5,00)</option>
-                              <option value="outras">Outras localidades (+R$ 5,00)</option>
+                              <option value="guamare">
+                                Guamaré (sem taxa)
+                              </option>
+                              <option value="salina_da_cruz">
+                                Salina da Cruz (+R$ 5,00)
+                              </option>
+                              <option value="outras">
+                                Outras localidades (+R$ 5,00)
+                              </option>
                             </select>
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Endereço</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Endereço
+                            </label>
                             <input
                               type="text"
                               placeholder="Rua, número, complemento"
                               value={endereco}
-                              onChange={(e) => setEndereco(e.target.value)}
+                              onChange={e => setEndereco(e.target.value)}
                               className="w-full px-3 py-2 border-2 border-orange-200 rounded focus:outline-none focus:border-orange-500"
                             />
                           </div>
@@ -572,7 +703,7 @@ export default function Home() {
                           name="tipo"
                           value="retirada"
                           checked={tipo === "retirada"}
-                          onChange={(e) => setTipo(e.target.value as OrderType)}
+                          onChange={e => setTipo(e.target.value as OrderType)}
                           className="w-4 h-4"
                         />
                         <span className="text-gray-700">Retirada</span>
@@ -582,12 +713,14 @@ export default function Home() {
 
                   {/* Observations */}
                   <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Observações
+                    </label>
                     <input
                       type="text"
                       placeholder="Ex: bem assado, sem sal..."
                       value={observacoes}
-                      onChange={(e) => setObservacoes(e.target.value)}
+                      onChange={e => setObservacoes(e.target.value)}
                       className="w-full px-3 py-2 border-2 border-orange-200 rounded focus:outline-none focus:border-orange-500"
                     />
                   </div>
@@ -596,7 +729,9 @@ export default function Home() {
                   <Card className="p-4 bg-orange-50 border-2 border-orange-200 mb-6">
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-gray-800">Total:</span>
-                      <span className="text-2xl font-bold text-orange-600">R$ {total.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-orange-600">
+                        R$ {total.toFixed(2)}
+                      </span>
                     </div>
                   </Card>
 
@@ -625,15 +760,26 @@ export default function Home() {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <ChefHat className="w-10 h-10 text-green-600" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-2">Pedido Recebido! 🍗</h2>
-                  <p className="text-gray-600 mb-8 text-lg">Escolha como deseja prosseguir com seu pedido #{lastOrderId}:</p>
-                  
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                    Pedido Recebido! 🍗
+                  </h2>
+                  <p className="text-gray-600 mb-8 text-lg">
+                    Escolha como deseja prosseguir com seu pedido #{lastOrderId}
+                    :
+                  </p>
+
                   <div className="grid gap-6 max-w-sm mx-auto">
                     <div className="space-y-4">
-                      <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Pague Agora e agilize</p>
+                      <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                        Pague Agora e agilize
+                      </p>
                       <Button
                         onClick={handlePayOnline}
-                        disabled={!mpPreferenceId || createPreferenceMutation.isPending || loading}
+                        disabled={
+                          !mpPreferenceId ||
+                          createPreferenceMutation.isPending ||
+                          loading
+                        }
                         className="w-full bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold py-8 rounded-2xl shadow-lg border-b-4 border-[#007EB5] active:border-b-0 transition-all h-auto flex flex-col gap-1 ring-offset-2 hover:ring-2 ring-[#009EE3]"
                       >
                         {createPreferenceMutation.isPending || loading ? (
@@ -641,7 +787,9 @@ export default function Home() {
                         ) : (
                           <>
                             <span className="text-xl">💳 Pagar Online</span>
-                            <span className="text-xs font-normal opacity-90 text-white/80">PIX ou Cartão (Mercado Pago)</span>
+                            <span className="text-xs font-normal opacity-90 text-white/80">
+                              PIX ou Cartão (Mercado Pago)
+                            </span>
                           </>
                         )}
                       </Button>
@@ -652,7 +800,9 @@ export default function Home() {
                         <span className="w-full border-t border-gray-200"></span>
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-gray-500 font-bold">Ou se preferir</span>
+                        <span className="bg-white px-2 text-gray-500 font-bold">
+                          Ou se preferir
+                        </span>
                       </div>
                     </div>
 
@@ -668,13 +818,15 @@ export default function Home() {
                         ) : (
                           <>
                             <span className="text-xl">💵 Pagar na Entrega</span>
-                            <span className="text-xs font-normal opacity-70">Avisar Pedido no WhatsApp</span>
+                            <span className="text-xs font-normal opacity-70">
+                              Avisar Pedido no WhatsApp
+                            </span>
                           </>
                         )}
                       </Button>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => setStep("order")}
                       className="text-gray-400 text-sm hover:underline mt-4"
                     >
@@ -687,7 +839,6 @@ export default function Home() {
           </>
         )}
       </div>
-
     </PublicLayout>
   );
 }

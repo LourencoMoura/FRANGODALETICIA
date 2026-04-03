@@ -24,7 +24,12 @@ interface OrderHistoryProps {
   onRepeatOrder: (order: Order) => void;
 }
 
-export default function OrderHistory({ customerId, customerName, onBack, onRepeatOrder }: OrderHistoryProps) {
+export default function OrderHistory({
+  customerId,
+  customerName,
+  onBack,
+  onRepeatOrder,
+}: OrderHistoryProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,16 +66,13 @@ export default function OrderHistory({ customerId, customerName, onBack, onRepea
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
+        <Button onClick={onBack} variant="outline" size="sm" className="gap-2">
           <ArrowLeft className="w-4 h-4" />
           Voltar
         </Button>
-        <h2 className="text-2xl font-bold text-gray-800">Histórico de Pedidos - {customerName}</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Histórico de Pedidos - {customerName}
+        </h2>
       </div>
 
       {/* Orders List */}
@@ -85,16 +87,23 @@ export default function OrderHistory({ customerId, customerName, onBack, onRepea
         </Card>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
-            <Card key={order.id} className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+          {orders.map(order => (
+            <Card
+              key={order.id}
+              className="p-6 shadow-lg hover:shadow-xl transition-shadow"
+            >
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">Pedido #{order.id}</h3>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    Pedido #{order.id}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                    {new Date(order.created_at).toLocaleDateString("pt-BR")}
                   </p>
                 </div>
-                <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
+                <span
+                  className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}
+                >
                   {order.status}
                 </span>
               </div>
@@ -106,7 +115,9 @@ export default function OrderHistory({ customerId, customerName, onBack, onRepea
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Total</p>
-                  <p className="font-semibold text-orange-600 text-lg">R$ {order.total.toFixed(2)}</p>
+                  <p className="font-semibold text-orange-600 text-lg">
+                    R$ {order.total.toFixed(2)}
+                  </p>
                 </div>
               </div>
 

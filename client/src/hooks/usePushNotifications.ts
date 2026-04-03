@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { trpc } from '../lib/trpc';
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { trpc } from "../lib/trpc";
 
 interface UsePushNotificationsReturn {
   isSupported: boolean;
@@ -23,9 +23,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   // Check support
   useEffect(() => {
     const supported =
-      'serviceWorker' in navigator &&
-      'PushManager' in window &&
-      'Notification' in window;
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window;
 
     setIsSupported(supported);
 
@@ -40,15 +40,17 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (err) {
-      console.error('Error checking subscription:', err);
+      console.error("Error checking subscription:", err);
     }
   };
 
-  const urlBase64ToUint8Array = (base64String: string): Uint8Array<ArrayBuffer> => {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const urlBase64ToUint8Array = (
+    base64String: string
+  ): Uint8Array<ArrayBuffer> => {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
 
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
@@ -62,12 +64,12 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   const subscribe = async (customerId: number) => {
     if (!isSupported) {
-      setError('Notificações push não são suportadas neste navegador');
+      setError("Notificações push não são suportadas neste navegador");
       return;
     }
 
     if (!vapidPublicKey) {
-      setError('Chave VAPID não configurada');
+      setError("Chave VAPID não configurada");
       return;
     }
 
@@ -76,22 +78,22 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
     try {
       // Request permission
-      if (Notification.permission === 'denied') {
+      if (Notification.permission === "denied") {
         throw new Error(
-          'Permissão para notificações foi negada. Por favor, habilite nas configurações do navegador.'
+          "Permissão para notificações foi negada. Por favor, habilite nas configurações do navegador."
         );
       }
 
-      if (Notification.permission !== 'granted') {
+      if (Notification.permission !== "granted") {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          throw new Error('Permissão para notificações foi negada');
+        if (permission !== "granted") {
+          throw new Error("Permissão para notificações foi negada");
         }
       }
 
       // Register service worker
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/',
+      const registration = await navigator.serviceWorker.register("/sw.js", {
+        scope: "/",
       });
 
       // Subscribe to push
@@ -106,23 +108,34 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         subscription: {
           endpoint: subscription.endpoint,
           keys: {
-            auth: subscription.getKey('auth')
-              ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('auth')!))))
-              : '',
-            p256dh: subscription.getKey('p256dh')
-              ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('p256dh')!))))
-              : '',
+            auth: subscription.getKey("auth")
+              ? btoa(
+                  String.fromCharCode.apply(
+                    null,
+                    Array.from(new Uint8Array(subscription.getKey("auth")!))
+                  )
+                )
+              : "",
+            p256dh: subscription.getKey("p256dh")
+              ? btoa(
+                  String.fromCharCode.apply(
+                    null,
+                    Array.from(new Uint8Array(subscription.getKey("p256dh")!))
+                  )
+                )
+              : "",
           },
         },
       });
 
       setIsSubscribed(true);
-      toast.success('Notificações habilitadas com sucesso! 🔔');
+      toast.success("Notificações habilitadas com sucesso! 🔔");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao habilitar notificações';
+      const message =
+        err instanceof Error ? err.message : "Erro ao habilitar notificações";
       setError(message);
       toast.error(message);
-      console.error('Error subscribing to push:', err);
+      console.error("Error subscribing to push:", err);
     } finally {
       setIsLoading(false);
     }
@@ -147,13 +160,14 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         // 2. Unsubscribe in browser
         await subscription.unsubscribe();
         setIsSubscribed(false);
-        toast.success('Notificações desabilitadas com sucesso! 🔔❌');
+        toast.success("Notificações desabilitadas com sucesso! 🔔❌");
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao desabilitar notificações';
+      const message =
+        err instanceof Error ? err.message : "Erro ao desabilitar notificações";
       setError(message);
       toast.error(message);
-      console.error('Error unsubscribing from push:', err);
+      console.error("Error unsubscribing from push:", err);
     } finally {
       setIsLoading(false);
     }

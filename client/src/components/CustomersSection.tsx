@@ -1,5 +1,5 @@
-import { Card } from '@/components/ui/card';
-import { Users } from 'lucide-react';
+import { Card } from "@/components/ui/card";
+import { Users } from "lucide-react";
 
 export function CustomersSection() {
   return (
@@ -9,7 +9,9 @@ export function CustomersSection() {
           <Users className="w-6 h-6 text-orange-600" />
           Clientes
         </h2>
-        <p className="text-center text-gray-600 py-12">Funcionalidade de clientes desabilitada temporariamente</p>
+        <p className="text-center text-gray-600 py-12">
+          Funcionalidade de clientes desabilitada temporariamente
+        </p>
       </Card>
     </div>
   );

@@ -16,12 +16,13 @@ export function InstallPWA() {
     const dismissed = localStorage.getItem("pwa-prompt-dismissed");
     const dismissedAt = dismissed ? parseInt(dismissed) : 0;
     const threeDays = 3 * 24 * 60 * 60 * 1000;
-    
+
     if (Date.now() - dismissedAt < threeDays) return;
 
     // 2. Detectar se ja esta instalado (standalone)
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || 
-                        (window.navigator as any).standalone === true;
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
     if (isStandalone) return;
 
     // 3. Detectar iOS
@@ -61,7 +62,7 @@ export function InstallPWA() {
   const dismissPrompt = () => {
     localStorage.setItem("pwa-prompt-dismissed", Date.now().toString());
     setShowPrompt(false);
-    
+
     // Oferecer notificações se o navegador suportar e ainda não estiver inscrito
     if (isSupported && !isSubscribed) {
       setTimeout(() => setShowPushPrompt(true), 1000);
@@ -86,7 +87,7 @@ export function InstallPWA() {
               exit={{ scale: 0.9, opacity: 0 }}
               className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-orange-100 dark:border-zinc-800"
             >
-              <button 
+              <button
                 onClick={dismissPrompt}
                 aria-label="Fechar"
                 className="absolute top-4 right-4 p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-orange-50 dark:hover:bg-zinc-700 transition-colors"
@@ -97,9 +98,9 @@ export function InstallPWA() {
               <div className="p-8 text-center">
                 <div className="relative inline-block mb-6">
                   <div className="w-24 h-24 rounded-2xl bg-orange-500 shadow-lg shadow-orange-500/30 flex items-center justify-center overflow-hidden border-4 border-white dark:border-zinc-800">
-                    <img 
-                      src="/icon-192x192.png" 
-                      alt="Logo" 
+                    <img
+                      src="/icon-192x192.png"
+                      alt="Logo"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -112,27 +113,30 @@ export function InstallPWA() {
                   Instale nosso App! 🍗
                 </h2>
                 <p className="text-zinc-500 dark:text-zinc-400 mb-8 px-2 leading-relaxed">
-                  Acesse o **Frango da Letícia** mais rápido e receba promoções exclusivas direto na sua tela inicial.
+                  Acesse o **Frango da Letícia** mais rápido e receba promoções
+                  exclusivas direto na sua tela inicial.
                 </p>
 
                 {isIOS ? (
                   <div className="space-y-4 p-4 bg-orange-50 dark:bg-orange-500/10 rounded-2xl border border-orange-100 dark:border-orange-500/20 text-sm text-zinc-700 dark:text-zinc-300">
                     <p className="flex items-center justify-center gap-2">
-                      1. Toque no ícone <Share className="w-4 h-4 text-blue-500" /> "Compartilhar"
+                      1. Toque no ícone{" "}
+                      <Share className="w-4 h-4 text-blue-500" /> "Compartilhar"
                     </p>
                     <p className="flex items-center justify-center gap-2">
-                      2. Escolha <PlusSquare className="w-4 h-4" /> "Tela de Início"
+                      2. Escolha <PlusSquare className="w-4 h-4" /> "Tela de
+                      Início"
                     </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-3">
-                    <Button 
+                    <Button
                       onClick={handleInstall}
                       className="w-full h-14 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg shadow-lg shadow-orange-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
                       Instalar Agora
                     </Button>
-                    <button 
+                    <button
                       onClick={dismissPrompt}
                       className="text-zinc-400 text-sm hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors py-2"
                     >
@@ -165,16 +169,17 @@ export function InstallPWA() {
                 Ativar Notificações? 🔔
               </h3>
               <p className="text-zinc-500 dark:text-zinc-400 mb-8">
-                Receba um aviso sonoro assim que o seu frango sair para entrega ou ficar pronto para retirada!
+                Receba um aviso sonoro assim que o seu frango sair para entrega
+                ou ficar pronto para retirada!
               </p>
               <div className="flex flex-col gap-3">
-                <Button 
+                <Button
                   onClick={handlePushSubscribe}
                   className="w-full h-12 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all"
                 >
                   Sim, quero receber avisos
                 </Button>
-                <button 
+                <button
                   onClick={() => setShowPushPrompt(false)}
                   className="text-zinc-400 text-sm hover:text-zinc-600 dark:hover:text-zinc-300 py-2"
                 >

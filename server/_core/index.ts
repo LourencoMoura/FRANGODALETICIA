@@ -11,12 +11,17 @@ import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
 
 // Global Exception Loggers for Vercel Debugging
-process.on("uncaughtException", (err) => {
+process.on("uncaughtException", err => {
   console.error("[CRITICAL] Uncaught Exception:", err.message, err.stack);
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("[CRITICAL] Unhandled Rejection at:", promise, "reason:", reason);
+  console.error(
+    "[CRITICAL] Unhandled Rejection at:",
+    promise,
+    "reason:",
+    reason
+  );
 });
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -50,12 +55,12 @@ const apiRouter = express.Router();
 // Global Health Check (Diagnostics)
 apiRouter.get("/ping", (_req, res) => {
   console.log("[Diagnostics] Ping request received.");
-  res.json({ 
-    status: "ok", 
-    timestamp: new Date().toISOString(), 
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV,
     has_db_url: !!process.env.DATABASE_URL,
-    platform: process.env.VERCEL ? "vercel" : "local"
+    platform: process.env.VERCEL ? "vercel" : "local",
   });
 });
 
@@ -86,27 +91,35 @@ apiRouter.use(
 );
 
 // Mount API router
-// On Vercel, we mount it at BOTH '/' and '/api' to be absolutely resilient 
+// On Vercel, we mount it at BOTH '/' and '/api' to be absolutely resilient
 // to how Vercel and the rewrites handle the incoming path.
 app.use("/api", apiRouter);
 app.use("/", apiRouter);
 
 // Global Error Handler for API routes (Rescue)
-apiRouter.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(`[API ERROR] ${req.method} ${req.url}:`, err);
-  res.status(500).json({
-    error: {
-      message: "Ocorreu um erro interno no servidor.",
-      code: "INTERNAL_SERVER_ERROR",
-      details: process.env.NODE_ENV === "development" ? err.message : undefined
-    }
-  });
-});
+apiRouter.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(`[API ERROR] ${req.method} ${req.url}:`, err);
+    res.status(500).json({
+      error: {
+        message: "Ocorreu um erro interno no servidor.",
+        code: "INTERNAL_SERVER_ERROR",
+        details:
+          process.env.NODE_ENV === "development" ? err.message : undefined,
+      },
+    });
+  }
+);
 
 async function startServer() {
   console.log(`[Lifecycle] STARTING BOOT... VERCEL: ${!!process.env.VERCEL}`);
   const server = createServer(app);
-  
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
@@ -131,7 +144,9 @@ async function startServer() {
   } else {
     // In Serverless, we still need to initialize reminders once if possible
     console.log("[Vercel] Booting in serverless mode...");
-    initializeReminders().catch(err => console.error("[Reminders] Failed to initialize on boot:", err));
+    initializeReminders().catch(err =>
+      console.error("[Reminders] Failed to initialize on boot:", err)
+    );
   }
 }
 

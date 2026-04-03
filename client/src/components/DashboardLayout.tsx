@@ -20,17 +20,29 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Gift, ShoppingCart, Home } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  PanelLeft,
+  Users,
+  Gift,
+  ShoppingCart,
+  Home,
+} from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Pedidos", path: "/admin/dashboard" },
   { icon: Gift, label: "Promoções", path: "/admin/dashboard?tab=promotions" },
   { icon: Users, label: "Clientes", path: "/admin/dashboard?tab=customers" },
-  { icon: ShoppingCart, label: "Produtos", path: "/admin/dashboard?tab=products" },
+  {
+    icon: ShoppingCart,
+    label: "Produtos",
+    path: "/admin/dashboard?tab=products",
+  },
   { icon: Home, label: "Ver Site", path: "/" },
 ];
 
@@ -48,14 +60,19 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  
+
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null
+  );
 
   useEffect(() => {
     const session = localStorage.getItem("adminSession");
     if (session) {
-      setUser({ name: "Leticia Admin", email: "admin@frango.com" });
+      setUser({
+        name: "Leticia Admin",
+        email: "admin@frango.com",
+      });
     }
     setLoading(false);
   }, []);
@@ -65,7 +82,7 @@ export default function DashboardLayout({
   }, [sidebarWidth]);
 
   if (loading) {
-    return <DashboardLayoutSkeleton />
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!user) {
@@ -78,7 +95,8 @@ export default function DashboardLayout({
               Acesso Restrito
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Esta área é reservada para administradores. Por favor, faça login para continuar.
+              Esta área é reservada para administradores. Por favor, faça login
+              para continuar.
             </p>
           </div>
           <Button
@@ -119,7 +137,9 @@ function DashboardLayoutContent({
   children,
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null
+  );
 
   useEffect(() => {
     const session = localStorage.getItem("adminSession");

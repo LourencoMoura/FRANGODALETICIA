@@ -9,22 +9,16 @@ interface PublicLayoutProps {
   onLogout: () => void;
 }
 
-export function PublicLayout({ 
-  children, 
-  nickname, 
-  points, 
-  onLogout 
+export function PublicLayout({
+  children,
+  nickname,
+  points,
+  onLogout,
 }: PublicLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Navbar 
-        nickname={nickname} 
-        points={points} 
-        onLogout={onLogout} 
-      />
-      <main className="flex-1">
-        {children}
-      </main>
+      <Navbar nickname={nickname} points={points} onLogout={onLogout} />
+      <main className="flex-1">{children}</main>
       <Footer />
     </div>
   );

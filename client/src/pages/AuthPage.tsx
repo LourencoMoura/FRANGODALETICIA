@@ -25,11 +25,17 @@ function AdminButton() {
       style={{ background: "none", border: "none" }}
     >
       <div className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center bg-white shadow-sm group-hover:shadow-md transition-shadow">
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-gray-400">
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-6 h-6 text-gray-400"
+        >
           <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
         </svg>
       </div>
-      <span className="text-xs font-semibold text-gray-500 whitespace-nowrap">site seguro</span>
+      <span className="text-xs font-semibold text-gray-500 whitespace-nowrap">
+        site seguro
+      </span>
     </button>
   );
 }
@@ -71,7 +77,11 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
         return;
       }
 
-      onLoginSuccess(result.customer.id, result.customer.nome, result.customer.apelido);
+      onLoginSuccess(
+        result.customer.id,
+        result.customer.nome,
+        result.customer.apelido
+      );
       toast.success(`Bem-vindo de volta, ${result.customer.apelido}! 🍗`);
     } catch (error: any) {
       console.error("Login Error:", error);
@@ -102,7 +112,11 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
         return;
       }
 
-      onLoginSuccess(result.customer.id, result.customer.nome, result.customer.apelido);
+      onLoginSuccess(
+        result.customer.id,
+        result.customer.nome,
+        result.customer.apelido
+      );
       toast.success("Cadastro realizado com sucesso! 🎉");
     } catch (error: any) {
       console.error("Signup Error:", error);
@@ -188,7 +202,7 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
                 type="tel"
                 placeholder="(84) 99999-9999"
                 value={loginWhatsapp}
-                onChange={(e) => setLoginWhatsapp(e.target.value)}
+                onChange={e => setLoginWhatsapp(e.target.value)}
                 disabled={loading}
                 className="border-2 border-orange-200 focus:border-orange-600 bg-white"
               />
@@ -225,7 +239,9 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
           <div className="text-center mb-8">
             <UserPlus className="w-12 h-12 mx-auto mb-4 text-orange-600" />
             <h2 className="text-2xl font-bold text-gray-800">Cadastro</h2>
-            <p className="text-gray-600 mt-2">Crie sua conta em poucos passos</p>
+            <p className="text-gray-600 mt-2">
+              Crie sua conta em poucos passos
+            </p>
           </div>
 
           <form onSubmit={handleSignup} className="space-y-4">
@@ -237,7 +253,7 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
                 type="tel"
                 placeholder="(84) 99999-9999"
                 value={signupWhatsapp}
-                onChange={(e) => setSignupWhatsapp(e.target.value)}
+                onChange={e => setSignupWhatsapp(e.target.value)}
                 disabled={loading}
                 className="border-2 border-orange-200 focus:border-orange-600 bg-white"
               />
@@ -251,7 +267,7 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
                 type="text"
                 placeholder="João Silva"
                 value={signupNome}
-                onChange={(e) => setSignupNome(e.target.value)}
+                onChange={e => setSignupNome(e.target.value)}
                 disabled={loading}
                 className="border-2 border-orange-200 focus:border-orange-600 bg-white"
               />
@@ -265,7 +281,7 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
                 type="text"
                 placeholder="João"
                 value={signupApelido}
-                onChange={(e) => setSignupApelido(e.target.value)}
+                onChange={e => setSignupApelido(e.target.value)}
                 disabled={loading}
                 className="border-2 border-orange-200 focus:border-orange-600 bg-white"
               />
@@ -273,7 +289,9 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
 
             <Button
               type="submit"
-              disabled={loading || !signupWhatsapp || !signupNome || !signupApelido}
+              disabled={
+                loading || !signupWhatsapp || !signupNome || !signupApelido
+              }
               className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
