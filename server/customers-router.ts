@@ -61,12 +61,12 @@ export const customersRouter = router({
         });
 
         return { success: true, customer };
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error logging in customer:", error);
         if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Erro ao autenticar cliente",
+          message: `Erro ao autenticar cliente: ${error.message || "Erro desconhecido"}`,
         });
       }
     }),
