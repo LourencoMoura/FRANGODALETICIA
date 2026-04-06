@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { adminsRouter } from "./admins-router.js";
 import { settingsRouter } from "./settings-router.js";
+import { productsRouter } from "./products-router.js";
 
 export const appRouter = router({
   system: systemRouter,
@@ -34,6 +35,7 @@ export const appRouter = router({
   orders: ordersRouter,
   payment: paymentRouter,
   settings: settingsRouter,
+  products: productsRouter,
 });
 
 export type AppRouter = typeof appRouter;

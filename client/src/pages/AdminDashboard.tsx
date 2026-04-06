@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { PromotionsPanel } from "@/components/PromotionsPanel";
+import { ProductsPanel } from "@/components/ProductsPanel";
 import DashboardLayout from "@/components/DashboardLayout";
 
 interface Order {
@@ -406,20 +407,7 @@ export default function AdminDashboard() {
             </Card>
           )}
 
-          {activeTab === "products" && (
-            <div className="bg-white rounded-2xl p-16 text-center shadow-xl border-2 border-dashed border-orange-100 flex flex-col items-center">
-              <div className="bg-orange-50 p-6 rounded-full mb-6">
-                <ShoppingCart className="w-16 h-16 text-orange-400" />
-              </div>
-              <h3 className="text-2xl font-black text-gray-800 mb-3">
-                Gestão de Cardápio
-              </h3>
-              <p className="text-gray-500 max-w-sm leading-relaxed">
-                Esta funcionalidade está sendo preparada para que você mude
-                preços e adicione novos itens em segundos.
-              </p>
-            </div>
-          )}
+          {activeTab === "products" && <ProductsPanel />}
 
           {activeTab === "settings" && (
             <div className="max-w-4xl space-y-6">

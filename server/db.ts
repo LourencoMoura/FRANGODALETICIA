@@ -11,6 +11,8 @@ import {
   type Admin,
   type InsertAdmin,
   admins,
+  products,
+  type InsertProduct,
 } from "../drizzle/schema.js";
 
 export {
@@ -22,6 +24,8 @@ export {
   type Admin,
   type InsertAdmin,
   admins,
+  products,
+  type InsertProduct,
 };
 import { ENV } from "./_core/env.js";
 
@@ -415,5 +419,81 @@ export async function createAdmin(data: InsertAdmin) {
   } catch (error) {
     console.error("[Database] Failed to create admin:", error);
     return null;
+  }
+}
+
+// Product Functions
+export async function getAllProducts() {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const result = await db.select().from(products).orderBy(desc(products.id));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get all products:", error);
+    return [];
+  }
+}
+
+export async function getProductById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const result = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, id))
+      .limit(1);
+    return result[0] || null;
+  } catch (error) {
+    console.error("[Database] Failed to get product by id:", error);
+    return null;
+  }
+}
+
+export async function createProduct(data: InsertProduct) {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const result = await db
+      .insert(products)
+      .values(data)
+      .returning({ id: products.id });
+    return result[0] || null;
+  } catch (error) {
+    console.error("[Database] Failed to create product:", error);
+    return null;
+  }
+}
+
+export async function updateProduct(id: number, data: Partial<InsertProduct>) {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    await db
+      .update(products)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(products.id, id));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to update product:", error);
+    return false;
+  }
+}
+
+export async function deleteProduct(id: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    await db.delete(products).where(eq(products.id, id));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete product:", error);
+    return false;
   }
 }

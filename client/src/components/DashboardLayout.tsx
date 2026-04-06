@@ -57,6 +57,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [, setLocation] = useLocation();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -76,7 +77,6 @@ export default function DashboardLayout({
   }
 
   if (!user || user.role !== "admin") {
-    const [, setLocation] = useLocation();
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
