@@ -143,7 +143,7 @@ export const users = pgTable(
   "users",
   {
     id: serial("id").primaryKey().notNull(),
-    openId: varchar("open_id", { length: 64 }).notNull(),
+    openId: varchar("open_id", { length: 64 }).notNull().unique(),
     name: text("name"),
     email: varchar("email", { length: 320 }),
     loginMethod: varchar("login_method", { length: 64 }),
