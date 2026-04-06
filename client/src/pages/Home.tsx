@@ -33,26 +33,7 @@ interface Product {
   description: string;
 }
 
-const PRODUCTS: Product[] = [
-  {
-    id: 1,
-    name: "Frango Inteiro",
-    price: 30,
-    description: "Frango assado inteiro, suculento e temperado",
-  },
-  {
-    id: 2,
-    name: "Banda de Frango",
-    price: 16,
-    description: "Meia frango assado, perfeito para uma pessoa",
-  },
-  {
-    id: 3,
-    name: "Linguiça Unid.",
-    price: 3,
-    description: "Linguiça grelhada, unidade",
-  },
-];
+// Removido PRODUCTS estático: agora buscamos do banco via tRPC
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -84,8 +65,11 @@ export default function Home() {
   const [observacoes, setObservacoes] = useState("");
 
   // Product quantities
-  const [quantities, setQuantities] = useState({ 1: 0, 2: 0, 3: 0 });
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [total, setTotal] = useState(0);
+
+  // Fetch real products from DB
+  const { data: products = [], isLoading: isProductsLoading } = trpc.products.list.useQuery();
 
   // tRPC mutations
   const createOrderMutation = trpc.orders.createOrder.useMutation();
@@ -114,11 +98,10 @@ export default function Home() {
 
   // Calculate total
   useEffect(() => {
-    let subtotal = 0;
-    PRODUCTS.forEach(product => {
+    products.forEach(product => {
       subtotal +=
-        (quantities[product.id as keyof typeof quantities] || 0) *
-        product.price;
+        (quantities[product.id] || 0) *
+        Number(product.price);
     });
 
     let taxa = 0;
@@ -312,13 +295,13 @@ export default function Home() {
     setLoading(true);
     try {
       // Build items array
-      const items = PRODUCTS.filter(
-        p => (quantities[p.id as keyof typeof quantities] || 0) > 0
+      const items = products.filter(
+        p => (quantities[p.id] || 0) > 0
       ).map(p => ({
         product_id: p.id,
         product_name: p.name,
-        quantity: quantities[p.id as keyof typeof quantities] || 0,
-        unit_price: p.price,
+        quantity: quantities[p.id] || 0,
+        unit_price: Number(p.price),
       }));
 
       // Use tRPC mutation to create order (default to presencial initially)
@@ -386,10 +369,10 @@ export default function Home() {
       // Build WhatsApp message
       let mensagem = `Cliente: ${nome} (${apelido})\nPedido #${orderId}\n\nOlá! Gostaria de fazer um pedido:\n\n`;
 
-      PRODUCTS.forEach(product => {
-        const qty = quantities[product.id as keyof typeof quantities] || 0;
+      products.forEach(product => {
+        const qty = quantities[product.id] || 0;
         if (qty > 0) {
-          mensagem += `🍗 ${product.name}: ${qty}x R$ ${(product.price * qty).toFixed(2)}\n`;
+          mensagem += `🍗 ${product.name}: ${qty}x R$ ${(Number(product.price) * qty).toFixed(2)}\n`;
         }
       });
 
@@ -423,7 +406,7 @@ export default function Home() {
       toast.success("Pedido registrado! 🎉");
 
       // Reset form
-      setQuantities({ 1: 0, 2: 0, 3: 0 });
+      setQuantities({});
       setEndereco("");
       setObservacoes("");
 
@@ -583,63 +566,66 @@ export default function Home() {
 
                   {/* Products */}
                   <div className="space-y-4 mb-6">
-                    {PRODUCTS.map(product => (
-                      <Card
-                        key={product.id}
-                        className="p-4 border-2 border-orange-200 hover:border-orange-400 transition-colors"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-800">
-                              {product.name}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {product.description}
+                    {isProductsLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+                      </div>
+                    ) : products.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">Nenhum produto disponível no momento.</p>
+                    ) : (
+                      products.map(product => (
+                        <Card
+                          key={product.id}
+                          className="p-4 border-2 border-orange-200 hover:border-orange-400 transition-colors"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h3 className="font-bold text-gray-800">
+                                {product.name}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {product.description}
+                              </p>
+                            </div>
+                            <p className="text-lg font-bold text-orange-600">
+                              R$ {Number(product.price).toFixed(2)}
                             </p>
                           </div>
-                          <p className="text-lg font-bold text-orange-600">
-                            R$ {product.price.toFixed(2)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setQuantities(prev => ({
-                                ...prev,
-                                [product.id]: Math.max(
-                                  0,
-                                  (prev[product.id as keyof typeof prev] || 0) -
-                                    1
-                                ),
-                              }))
-                            }
-                            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors"
-                          >
-                            −
-                          </button>
-                          <span className="w-8 text-center font-bold">
-                            {quantities[
-                              product.id as keyof typeof quantities
-                            ] || 0}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setQuantities(prev => ({
-                                ...prev,
-                                [product.id]:
-                                  (prev[product.id as keyof typeof prev] || 0) +
-                                  1,
-                              }))
-                            }
-                            className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </Card>
-                    ))}
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQuantities(prev => ({
+                                  ...prev,
+                                  [product.id]: Math.max(
+                                    0,
+                                    (prev[product.id] || 0) - 1
+                                  ),
+                                }))
+                              }
+                              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors"
+                            >
+                              −
+                            </button>
+                            <span className="w-8 text-center font-bold">
+                              {quantities[product.id] || 0}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQuantities(prev => ({
+                                  ...prev,
+                                  [product.id]: (prev[product.id] || 0) + 1,
+                                }))
+                              }
+                              className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </Card>
+                      ))
+                    )}
                   </div>
 
                   {/* Delivery Type */}
