@@ -42,7 +42,32 @@ type Tab = "orders" | "promotions" | "customers" | "products" | "settings";
 
 export default function AdminDashboard() {
   const [location] = useLocation();
-  const searchParams = new URLSearchParams(window.location.search);
+  // Forçar re-renderização quando a query string mudar
+  const [currentSearch, setCurrentSearch] = useState(window.location.search);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentSearch(window.location.search);
+    };
+
+    // Escutar mudanças no histórico do navegador
+    window.addEventListener("popstate", handleLocationChange);
+    
+    // Pequeno hack: como o wouter setLocation nem sempre dispara popstate em mudanças parciais,
+    // vamos observar mudanças no objeto window.location periodicamente ou via interceptação
+    const interval = setInterval(() => {
+      if (window.location.search !== currentSearch) {
+        setCurrentSearch(window.location.search);
+      }
+    }, 100);
+
+    return () => {
+      window.removeEventListener("popstate", handleLocationChange);
+      clearInterval(interval);
+    };
+  }, [currentSearch]);
+
+  const searchParams = new URLSearchParams(currentSearch);
   const tabFromUrl = searchParams.get("tab") as Tab;
   const activeTab: Tab = (tabFromUrl && ["orders", "promotions", "customers", "products", "settings"].includes(tabFromUrl)) 
     ? tabFromUrl 

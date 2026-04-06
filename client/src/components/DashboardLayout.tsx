@@ -134,7 +134,18 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const fullPath = window.location.pathname + window.location.search;
+  const [localSearch, setLocalSearch] = useState(window.location.search);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.location.search !== localSearch) {
+        setLocalSearch(window.location.search);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [localSearch]);
+
+  const fullPath = window.location.pathname + localSearch;
   const activeMenuItem =
     menuItems.find(item => fullPath === item.path) ||
     menuItems.find(item => location === item.path);
