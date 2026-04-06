@@ -1,7 +1,6 @@
 import { eq, ne } from "drizzle-orm";
-import { orders } from "../drizzle/schema";
 import webpush from "web-push";
-import { getDb } from "./db.js";
+import { getDb, orders } from "./db.js";
 import { sendPushNotification } from "./push-notifications.js";
 
 // Configure VAPID

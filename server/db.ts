@@ -3,15 +3,26 @@ import postgres from "postgres";
 import { eq, and, desc, sql } from "drizzle-orm";
 import * as schema from "../drizzle/schema.js";
 import {
-  InsertUser,
+  type InsertUser,
   users,
   orders,
   pushSubscriptions,
   customers,
-  Admin,
-  InsertAdmin,
+  type Admin,
+  type InsertAdmin,
   admins,
 } from "../drizzle/schema.js";
+
+export {
+  type InsertUser,
+  users,
+  orders,
+  pushSubscriptions,
+  customers,
+  type Admin,
+  type InsertAdmin,
+  admins,
+};
 import { ENV } from "./_core/env.js";
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
