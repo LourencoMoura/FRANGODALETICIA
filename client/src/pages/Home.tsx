@@ -98,6 +98,7 @@ export default function Home() {
 
   // Calculate total
   useEffect(() => {
+    let subtotal = 0;
     products.forEach(product => {
       subtotal +=
         (quantities[product.id] || 0) *
@@ -110,7 +111,7 @@ export default function Home() {
     }
 
     setTotal(subtotal + taxa);
-  }, [quantities, tipo, localidade]);
+  }, [quantities, tipo, localidade, products]);
 
   // Auth synchronization
   const { data: meData, isLoading: isMeLoading } = trpc.auth.me.useQuery(
