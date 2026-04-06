@@ -61,11 +61,20 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
-      fetch(input, init) {
-        return globalThis.fetch(input, {
+      async fetch(input, init) {
+        const response = await globalThis.fetch(input, {
           ...(init ?? {}),
           credentials: "include",
         });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(
+            `Erro de Servidor [${response.status}]: ${text || response.statusText}`
+          );
+        }
+
+        return response;
       },
     }),
   ],

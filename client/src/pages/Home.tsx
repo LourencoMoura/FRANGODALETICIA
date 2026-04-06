@@ -141,12 +141,13 @@ export default function Home() {
   const logoutMutation = trpc.auth.logout.useMutation();
 
   useEffect(() => {
-    if (meData && meData.role === "user" && meData.openId.startsWith("customer:")) {
-      const id = parseInt(meData.openId.split(":")[1], 10);
+    const user = meData as { role: string; openId: string; name: string } | undefined;
+    if (user && user.role === "user" && user.openId.startsWith("customer:")) {
+      const id = parseInt(user.openId.split(":")[1], 10);
       if (!customerId) {
         setCustomerId(id);
-        setNome(meData.name);
-        setApelido(meData.name.split(" ")[0]); // Fallback nickname if not in meData
+        setNome(user.name);
+        setApelido(user.name.split(" ")[0]); // Fallback nickname if not in meData
         setStep("order");
       }
     }
@@ -259,7 +260,7 @@ export default function Home() {
               data.id,
               nome,
               apelido,
-              data.tipo,
+              data.tipo || "entrega",
               data.localidade || undefined,
               data.endereco || undefined,
               data.horarioRetirada || undefined,
@@ -466,7 +467,7 @@ export default function Home() {
           data.id,
           nome,
           apelido,
-          data.tipo,
+          data.tipo || "entrega",
           data.localidade || undefined,
           data.endereco || undefined,
           data.horarioRetirada || undefined,

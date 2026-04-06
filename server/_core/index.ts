@@ -65,26 +65,23 @@ apiRouter.use(
 // Montar roteador de API
 app.use("/api", apiRouter);
 
+// Servir diretório de uploads local (fallback de storage)
+import path from "path";
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+
+// Manipulador de Erro Global (Fallback)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("🚨 [SERVER ERROR]:", err);
+  res.status(err.status || 500).json({
+    status: "error",
+    message: err.message || "Ocorreu um erro interno no servidor.",
+    code: err.code || "INTERNAL_SERVER_ERROR"
+  });
+});
+
 // 3. Suporte para Ambiente de Desenvolvimento (Vite)
 const isVercel = !!process.env.VERCEL;
 
-if (!isVercel) {
-  // Inicialização dinâmica do Vite apenas em desenvolvimento local
-  (async () => {
-    try {
-      const { setupVite, serveStatic } = await import("./vite.js");
-      if (process.env.NODE_ENV !== "production") {
-        await setupVite(app);
-      } else {
-        serveStatic(app);
-      }
-    } catch (e) {
-      console.warn("[Vite] Carregamento ignorado (ambiente de produção ou build ausente)");
-    }
-  })();
-}
-
-// 4. Inicialização do Servidor (Apenas se não estiver na Vercel)
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -102,16 +99,30 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   return startPort;
 }
 
-async function startServer() {
-  const port = await findAvailablePort(Number(process.env.PORT) || 3000);
-  const server = createServer(app);
-  server.listen(port, "0.0.0.0", () => {
-    console.log(`[Server] Rodando em http://localhost:${port}`);
-  });
-}
+// 4. Inicialização do Servidor (Apenas se não estiver na Vercel)
+const server = createServer(app);
 
 if (!isVercel) {
-  startServer();
+  // Inicialização dinâmica do Vite apenas em desenvolvimento local
+  (async () => {
+    try {
+      const { setupVite, serveStatic } = await import("./vite.js");
+      if (process.env.NODE_ENV !== "production") {
+        await setupVite(app, server);
+      } else {
+        serveStatic(app);
+      }
+    } catch (e) {
+      console.warn("[Vite] Carregamento ignorado (ambiente de produção ou build ausente)");
+    }
+  })();
+
+  (async function start() {
+    const port = await findAvailablePort(Number(process.env.PORT) || 3000);
+    server.listen(port, "0.0.0.0", () => {
+      console.log(`[Server] Rodando em http://localhost:${port}`);
+    });
+  })();
 }
 
 // 5. Exportação para Vercel

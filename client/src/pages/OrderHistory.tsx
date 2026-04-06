@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, ArrowLeft, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface Order {
   id: number;
@@ -33,21 +34,21 @@ export default function OrderHistory({
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        // TODO: Implementar tRPC query para buscar histórico de pedidos
-        setOrders([]);
-      } catch (error) {
-        console.error("Erro ao carregar pedidos:", error);
-        toast.error("Erro ao carregar histórico");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: listData, isLoading: isOrdersLoading } = trpc.orders.getOrdersByCustomer.useQuery(undefined, {
+    enabled: !!customerId
+  });
 
-    loadOrders();
-  }, [customerId]);
+  useEffect(() => {
+    if (listData?.success && listData.orders) {
+      setOrders(listData.orders as Order[]);
+    }
+  }, [listData]);
+
+  useEffect(() => {
+    if (!isOrdersLoading) {
+      setLoading(false);
+    }
+  }, [isOrdersLoading]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
