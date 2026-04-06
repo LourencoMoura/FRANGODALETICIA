@@ -17,8 +17,6 @@ app.get("/api/ping", (_req, res) => {
 // 2. DYNAMICALLY LOAD THE PROJECT
 app.all("/api/*", async (req, res) => {
   try {
-    // We import the complex logic ONLY when needed
-    // This prevents the whole function from crashing if one file has an import error
     const { createExpressMiddleware } = await import("@trpc/server/adapters/express");
     const { appRouter } = await import("../server/routers.js");
     const { createContext } = await import("../server/_core/context.js");
@@ -33,18 +31,23 @@ app.all("/api/*", async (req, res) => {
       "/trpc",
       createExpressMiddleware({
         router: appRouter,
-        createContext: (opts) => createContext({ ...opts, req, res }),
+        createContext: (opts) => createContext({ ...opts, req: opts.req, res: opts.res }),
       })
     );
 
-    // Use the apiRouter at the /api path. 
-    // This allows Express to handle the "/api" part of the URL 
-    // before it gets to the sub-routes like "/trpc"
-    app.use("/api", apiRouter);
+    // Vercel routes /api/* to this file.
+    // We must remove the "/api" prefix for the sub-router to work correctly.
+    const originalUrl = req.url;
+    if (req.url.startsWith("/api")) {
+      req.url = req.url.replace("/api", "") || "/";
+    }
 
-    // Continue the routing
     return apiRouter(req, res, () => {
-       res.status(404).json({ error: "Route not found in sub-router", url: req.url });
+       res.status(404).json({ 
+         error: "Route not found in API router", 
+         originalUrl,
+         tryingPath: req.url 
+       });
     });
   } catch (err: any) {
     console.error("[Vercel Runtime Error]:", err.message);
