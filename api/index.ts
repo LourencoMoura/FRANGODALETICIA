@@ -37,9 +37,14 @@ app.all("/api/*", async (req, res) => {
       })
     );
 
-    // Manual route handling for the sub-router
+    // Use the apiRouter at the /api path. 
+    // This allows Express to handle the "/api" part of the URL 
+    // before it gets to the sub-routes like "/trpc"
+    app.use("/api", apiRouter);
+
+    // Continue the routing
     return apiRouter(req, res, () => {
-       res.status(404).json({ error: "Route not found in sub-router" });
+       res.status(404).json({ error: "Route not found in sub-router", url: req.url });
     });
   } catch (err: any) {
     console.error("[Vercel Runtime Error]:", err.message);
