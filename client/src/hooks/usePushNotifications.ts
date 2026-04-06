@@ -69,7 +69,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
 
     if (!vapidPublicKey) {
-      setError("Chave VAPID não configurada");
+      const msg = "Chave VAPID não configurada no ambiente (VITE_VAPID_PUBLIC_KEY)";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
