@@ -41,8 +41,13 @@ interface Order {
 type Tab = "orders" | "promotions" | "customers" | "products" | "settings";
 
 export default function AdminDashboard() {
-  const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<Tab>("orders");
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(window.location.search);
+  const tabFromUrl = searchParams.get("tab") as Tab;
+  const activeTab: Tab = (tabFromUrl && ["orders", "promotions", "customers", "products", "settings"].includes(tabFromUrl)) 
+    ? tabFromUrl 
+    : "orders";
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -53,21 +58,7 @@ export default function AdminDashboard() {
   });
   const [whatsapp, setWhatsapp] = useState("");
 
-  // Sync tab with URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tabFromUrl = params.get("tab") as Tab;
-    if (
-      tabFromUrl &&
-      ["orders", "promotions", "customers", "products", "settings"].includes(
-        tabFromUrl
-      )
-    ) {
-      setActiveTab(tabFromUrl);
-    } else {
-      setActiveTab("orders");
-    }
-  }, [location, window.location.search]);
+
 
   // tRPC Queries
   const { data: ordersList, isLoading: isFetchingOrders } =
