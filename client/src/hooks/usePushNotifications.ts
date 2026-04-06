@@ -94,9 +94,12 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       }
 
       // Register service worker
-      const registration = await navigator.serviceWorker.register("/sw.js", {
+      await navigator.serviceWorker.register("/sw.js", {
         scope: "/",
       });
+
+      // Wait until the service worker is fully active
+      const registration = await navigator.serviceWorker.ready;
 
       // Subscribe to push
       const subscription = await registration.pushManager.subscribe({
