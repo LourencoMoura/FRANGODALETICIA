@@ -490,6 +490,12 @@ export default function Home() {
     }
   };
 
+  // Hooks must be defined before ANY conditional returns
+  const { data: customerData } = trpc.customers.getById.useQuery(
+    { id: customerId || 0 },
+    { enabled: !!customerId }
+  );
+
   // Show loading during initial auth check
   if (isMeLoading && !customerId) {
     return (
@@ -503,12 +509,6 @@ export default function Home() {
   if (!customerId) {
     return <AuthPage onLoginSuccess={handleLoginSuccess} />;
   }
-
-  // Fetch customer details to get points
-  const { data: customerData } = trpc.customers.getById.useQuery(
-    { id: customerId || 0 },
-    { enabled: !!customerId }
-  );
 
   return (
     <PublicLayout
