@@ -192,7 +192,7 @@ export function PromotionsPanel() {
                   type="number"
                   value={form.desconto}
                   onChange={e =>
-                    setForm({ ...form, desconto: parseFloat(e.target.value) })
+                    setForm({ ...form, desconto: parseFloat(e.target.value) || 0 })
                   }
                 />
               </div>
