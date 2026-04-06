@@ -5,6 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Loader2,
   TrendingUp,
   Package,
@@ -16,6 +22,7 @@ import {
   Settings,
   ShieldCheck,
   CheckSquare,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -350,6 +357,7 @@ export default function AdminDashboard() {
                               size="sm"
                               variant="ghost"
                               className="text-orange-600 hover:text-orange-700 font-bold"
+                              onClick={() => setSelectedOrder(order)}
                             >
                               Detalhes
                             </Button>
@@ -360,6 +368,149 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               )}
+
+              {/* Modal de Detalhes do Pedido */}
+              <Dialog
+                open={!!selectedOrder}
+                onOpenChange={open => !open && setSelectedOrder(null)}
+              >
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-orange-100">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-black text-gray-800">
+                      Pedido #{selectedOrder?.id}
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  {selectedOrder && (
+                    <div className="space-y-6 pt-4">
+                      {/* Cliente e Status */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                          <p className="text-xs font-bold text-gray-400 uppercase mb-1">
+                            Status do Pedido
+                          </p>
+                          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                            {selectedOrder.status.replace("-", " ")}
+                          </span>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                          <p className="text-xs font-bold text-gray-400 uppercase mb-1">
+                            Pagamento
+                          </p>
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                              selectedOrder.paymentStatus === "approved"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {selectedOrder.paymentStatus === "approved"
+                              ? "Aprovado"
+                              : "Pendente"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Itens do Pedido */}
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                          <Package className="w-5 h-5 text-orange-500" />
+                          Itens
+                        </h3>
+                        <div className="space-y-2">
+                          {Array.isArray(selectedOrder.items) ? (
+                            selectedOrder.items.map((item: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 font-bold text-sm">
+                                    {item.quantity}x
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {item.name || item.titulo}
+                                  </span>
+                                </div>
+                                <span className="font-bold text-gray-900">
+                                  R${" "}
+                                  {(
+                                    Number(item.price || 0) * item.quantity
+                                  ).toFixed(2)}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-400 italic">
+                              Erro ao carregar itens.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Entrega / Retirada */}
+                      <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                        <h3 className="text-sm font-bold text-orange-800 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                          {selectedOrder.tipo === "entrega" ? (
+                            <>
+                              <MapPin className="w-4 h-4" /> Dados de Entrega
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-4 h-4" /> Dados de Retirada
+                            </>
+                          )}
+                        </h3>
+                        {selectedOrder.tipo === "entrega" ? (
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-700">
+                               <strong>Localidade:</strong>{" "}
+                              {selectedOrder.localidade?.replace("_", " ")}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <strong>Endereço:</strong> {selectedOrder.endereco}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-700">
+                            <strong>Horário sugerido:</strong>{" "}
+                            {selectedOrder.horarioRetirada}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Observações */}
+                      {selectedOrder.observacoes && (
+                        <div>
+                          <h3 className="text-sm font-bold text-gray-700 mb-2">
+                            Observações do Cliente
+                          </h3>
+                          <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-gray-700 italic">
+                            "{selectedOrder.observacoes}"
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Total */}
+                      <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                        <span className="text-gray-500 font-bold">TOTAL</span>
+                        <span className="text-3xl font-black text-orange-600">
+                          R$ {Number(selectedOrder.total).toFixed(2)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-end pt-4">
+                        <Button
+                          onClick={() => setSelectedOrder(null)}
+                          className="bg-gray-900 hover:bg-black text-white px-8 font-bold"
+                        >
+                          Fechar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </Card>
           )}
 
