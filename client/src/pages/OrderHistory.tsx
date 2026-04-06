@@ -5,18 +5,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 
-interface Order {
-  id: number;
-  customer_id: number;
-  tipo: string;
-  localidade?: string;
-  endereco?: string;
-  horario_retirada?: string;
-  observacoes?: string;
-  total: number;
-  status: string;
-  created_at: string;
-}
+import { type Order } from "../../../shared/types";
 
 interface OrderHistoryProps {
   customerId: number;
@@ -40,7 +29,7 @@ export default function OrderHistory({
 
   useEffect(() => {
     if (listData?.success && listData.orders) {
-      setOrders(listData.orders as Order[]);
+      setOrders(listData.orders as unknown as Order[]);
     }
   }, [listData]);
 
@@ -99,7 +88,7 @@ export default function OrderHistory({
                     Pedido #{order.id}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {new Date(order.created_at).toLocaleDateString("pt-BR")}
+                    {new Date(order.createdAt).toLocaleDateString("pt-BR")}
                   </p>
                 </div>
                 <span
@@ -117,7 +106,7 @@ export default function OrderHistory({
                 <div>
                   <p className="text-sm text-gray-600">Total</p>
                   <p className="font-semibold text-orange-600 text-lg">
-                    R$ {order.total.toFixed(2)}
+                    R$ {Number(order.total).toFixed(2)}
                   </p>
                 </div>
               </div>

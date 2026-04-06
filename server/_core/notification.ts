@@ -27,5 +27,16 @@ export const NotificationService = {
   async notifyOrderStatus(customerId: number, status: string, orderId: number) {
     console.log(`[Notification] Status Order ${orderId} -> ${status}`);
     return PushService.sendStatusUpdateNotification(customerId, status, orderId);
+  },
+
+  /**
+   * Notifica o proprietário/admin (broadcast para todos no momento)
+   */
+  async notifyOwner(input: { title: string; content: string }) {
+    console.log(`[Notification] Notificando proprietário: ${input.title}`);
+    return PushService.sendBroadcastPushNotification(input.title, input.content);
   }
 };
+
+// Exportação individual para compatibilidade com systemRouter.ts
+export const notifyOwner = NotificationService.notifyOwner;
