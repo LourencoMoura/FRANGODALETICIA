@@ -106,12 +106,17 @@ export default function Home() {
     });
 
     let taxa = 0;
+    const dynamicFee = publicSettings?.deliveryFee ?? 5;
+    
+    // Sincronia: Taxa só existe se for ENTREGA e NÃO for em Guamare
     if (tipo === "entrega" && localidade !== "guamare") {
-      taxa = 5;
+      taxa = dynamicFee;
+    } else {
+      taxa = 0; // Garante taxa ZERO na retirada ou em Guamare
     }
 
     setTotal(subtotal + taxa);
-  }, [quantities, tipo, localidade, products]);
+  }, [quantities, tipo, localidade, products, publicSettings]);
 
   // Auth synchronization
   const { data: meData, isLoading: isMeLoading } = trpc.auth.me.useQuery(
@@ -380,12 +385,13 @@ export default function Home() {
       mensagem += `\n📍 Tipo: ${tipo === "entrega" ? "Entrega" : "Retirada"}\n`;
 
       if (tipo === "entrega") {
+        const currentFee = publicSettings?.deliveryFee ?? 5;
         const localidadeNome =
           localidade === "guamare"
             ? "Guamaré (sem taxa)"
             : localidade === "salina_da_cruz"
-              ? "Salina da Cruz (+R$ 5,00)"
-              : "Outras localidades (+R$ 5,00)";
+              ? `Salina da Cruz (+R$ ${currentFee.toFixed(2)})`
+              : `Outras localidades (+R$ ${currentFee.toFixed(2)})`;
         mensagem += `📍 Localidade: ${localidadeNome}\n`;
         mensagem += `📍 Endereço: ${endereco}\n`;
       } else {
@@ -664,10 +670,10 @@ export default function Home() {
                                 Guamaré (sem taxa)
                               </option>
                               <option value="salina_da_cruz">
-                                Salina da Cruz (+R$ 5,00)
+                                Salina da Cruz (+R$ {(publicSettings?.deliveryFee ?? 5).toFixed(2)})
                               </option>
                               <option value="outras">
-                                Outras localidades (+R$ 5,00)
+                                Outras localidades (+R$ {(publicSettings?.deliveryFee ?? 5).toFixed(2)})
                               </option>
                             </select>
                           </div>

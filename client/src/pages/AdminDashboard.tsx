@@ -82,6 +82,7 @@ export default function AdminDashboard() {
     accessToken: "",
   });
   const [whatsapp, setWhatsapp] = useState("");
+  const [deliveryFee, setDeliveryFee] = useState("5.00");
 
 
 
@@ -92,6 +93,7 @@ export default function AdminDashboard() {
     trpc.customers.list.useQuery();
   const mpSettings = trpc.payment.getAdminSettings.useQuery();
   const { data: publicSettings } = trpc.settings.getPublicSettings.useQuery();
+  const { data: adminSettings } = trpc.settings.getAllSettings.useQuery();
 
   const utils = trpc.useUtils();
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
@@ -111,10 +113,10 @@ export default function AdminDashboard() {
 
   const updateWhatsappMutation = trpc.settings.updateSetting.useMutation({
     onSuccess: () => {
-      toast.success("WhatsApp atualizado!");
+      toast.success("Configuração atualizada!");
       utils.settings.getPublicSettings.invalidate();
     },
-    onError: err => toast.error("Erro ao salvar WhatsApp: " + err.message),
+    onError: err => toast.error("Erro ao salvar: " + err.message),
   });
 
   useEffect(() => {
@@ -135,10 +137,14 @@ export default function AdminDashboard() {
         accessToken: mpSettings.data.accessToken,
       });
     }
-    if (publicSettings) {
-      setWhatsapp(publicSettings.whatsapp);
+    if (adminSettings) {
+      const wa = adminSettings.find(s => s.key === "whatsapp_suporte");
+      if (wa) setWhatsapp(wa.value);
+
+      const fee = adminSettings.find(s => s.key === "taxa_entrega");
+      if (fee) setDeliveryFee(fee.value);
     }
-  }, [mpSettings.data, publicSettings]);
+  }, [mpSettings.data, adminSettings]);
 
   const stats = {
     total: orders.length,
@@ -547,6 +553,61 @@ export default function AdminDashboard() {
                       {updateWhatsappMutation.isPending
                         ? "Salvando..."
                         : "Salvar Numero do WhatsApp"}
+                    </Button>
+                  </div>
+                </form>
+
+                <div className="my-10 border-t border-gray-100 italic-none"></div>
+
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 shadow-sm">
+                    <MapPin className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-800">
+                      Taxa de Entrega
+                    </h2>
+                    <p className="text-gray-500 font-medium">
+                      Defina o valor cobrado para entregas.
+                    </p>
+                  </div>
+                </div>
+
+                <form
+                  className="space-y-6"
+                  onSubmit={e => {
+                    e.preventDefault();
+                    updateWhatsappMutation.mutate({
+                      key: "taxa_entrega",
+                      value: deliveryFee,
+                    });
+                  }}
+                >
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">
+                      Valor da Taxa (R$)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.50"
+                      value={deliveryFee}
+                      onChange={e => setDeliveryFee(e.target.value)}
+                      className="h-12 border-gray-200 focus:ring-orange-500 font-mono text-sm"
+                      placeholder="5.00"
+                    />
+                    <p className="text-xs text-gray-400 ml-1 italic">
+                      Este valor será somado ao total apenas se o cliente escolher "Entrega".
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-8 h-12"
+                      disabled={updateWhatsappMutation.isPending}
+                    >
+                      {updateWhatsappMutation.isPending
+                        ? "Salvando..."
+                        : "Salvar Taxa de Entrega"}
                     </Button>
                   </div>
                 </form>

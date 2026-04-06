@@ -19,9 +19,14 @@ export const settingsRouter = router({
       where: eq(settings.key, "nome_loja"),
     });
 
+    const deliveryFee = await db.query.settings.findFirst({
+      where: eq(settings.key, "taxa_entrega"),
+    });
+
     return {
       whatsapp: whatsapp?.value || "5584999589480",
       storeName: storeName?.value || "Frango da Letícia",
+      deliveryFee: Number(deliveryFee?.value || "5.00"),
     };
   }),
 
