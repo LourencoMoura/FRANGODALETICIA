@@ -41,6 +41,7 @@ function App() {
       >
         <TooltipProvider>
           <SplashScreen />
+          <InstallPWA />
           <Toaster />
           <Router />
         </TooltipProvider>
