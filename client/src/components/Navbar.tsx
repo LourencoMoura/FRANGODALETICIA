@@ -8,7 +8,7 @@ interface NavbarProps {
 
 export function Navbar({ nickname, points, onLogout }: NavbarProps) {
   return (
-    <nav className="bg-gradient-to-r from-orange-600 to-amber-600 text-white py-6 shadow-lg">
+    <nav className="bg-gradient-to-r from-orange-600 to-amber-600 text-white pt-safe pb-6 shadow-xl">
       <div className="container px-4 flex items-center justify-between mx-auto">
         <div className="flex items-center gap-3">
           <img
