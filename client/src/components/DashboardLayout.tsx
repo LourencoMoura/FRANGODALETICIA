@@ -302,7 +302,7 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling-touch p-4">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling-touch p-4 relative h-[1px] min-h-full">
           {children}
         </main>
       </SidebarInset>
