@@ -287,14 +287,14 @@ function DashboardLayoutContent({
         />
       </div>
 
-      <SidebarInset className="flex flex-col h-full overflow-hidden">
+      <SidebarInset className="flex flex-col min-h-svh w-full bg-background overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling-touch">
         {isMobile && (
           <div className="flex border-b h-auto min-h-[3.5rem] pt-safe items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40 shadow-sm">
             <div className="flex items-center gap-2 h-14">
               <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="tracking-tight text-foreground">
+                  <span className="tracking-tight text-foreground font-bold">
                     {activeMenuItem?.label ?? "Menu"}
                   </span>
                 </div>
@@ -302,9 +302,9 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling-touch p-4 relative h-[1px] min-h-full">
+        <div className="flex-1 p-4 pb-24 md:pb-4 animate-in fade-in duration-500">
           {children}
-        </main>
+        </div>
       </SidebarInset>
     </>
   );
