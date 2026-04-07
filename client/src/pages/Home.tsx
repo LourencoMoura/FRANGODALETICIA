@@ -510,7 +510,7 @@ export default function Home() {
       onLogout={handleLogout}
     >
       {/* Main Content */}
-      <div className="container py-8 pb-32 sm:pb-8 no-scrollbar overflow-y-auto">
+      <div className="container py-8 pb-32 sm:pb-8">
         {showHistory && customerId && nome ? (
           <OrderHistory
             customerId={customerId}

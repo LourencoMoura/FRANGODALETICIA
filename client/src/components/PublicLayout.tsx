@@ -16,9 +16,11 @@ export function PublicLayout({
   onLogout,
 }: PublicLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
       <Navbar nickname={nickname} points={points} onLogout={onLogout} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 -webkit-overflow-scrolling-touch no-scrollbar">
+        {children}
+      </main>
       <div className="hidden sm:block">
         <Footer />
       </div>
