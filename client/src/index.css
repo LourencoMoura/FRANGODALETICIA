@@ -161,12 +161,13 @@
   }
 
   /* Hide scrollbars but keep functionality */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
   .no-scrollbar {
-    -ms-overflow-style: none;
+    -ms-overflow-style: none; /* IE e Edge */
     scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari e Opera */
   }
 
   /* Safe area utilities */
