@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { haptics } from "@/lib/haptics";
 
 interface Product {
   id: number;
@@ -70,9 +71,11 @@ export function ProductsPanel() {
     });
     setShowForm(false);
     setEditingProduct(null);
+    haptics.light();
   };
 
   const handleEdit = (product: Product) => {
+    haptics.light();
     setEditingProduct(product);
     setForm({
       name: product.name,
@@ -90,8 +93,10 @@ export function ProductsPanel() {
     }
 
     if (editingProduct) {
+      haptics.heavy();
       updateMutation.mutate({ id: editingProduct.id, ...form });
     } else {
+      haptics.heavy();
       createMutation.mutate(form);
     }
   };

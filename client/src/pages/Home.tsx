@@ -21,6 +21,9 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import OrderHistory from "./OrderHistory";
 import AuthPage from "./AuthPage";
 import { PublicLayout } from "@/components/PublicLayout";
+import { haptics } from "@/lib/haptics";
+import { BottomNav } from "@/components/BottomNav";
+import { Footer } from "@/components/Footer";
 
 type OrderStep = "order" | "confirmation";
 type OrderType = "entrega" | "retirada";
@@ -507,7 +510,7 @@ export default function Home() {
       onLogout={handleLogout}
     >
       {/* Main Content */}
-      <div className="container py-8">
+      <div className="container py-8 pb-32 sm:pb-8 no-scrollbar overflow-y-auto">
         {showHistory && customerId && nome ? (
           <OrderHistory
             customerId={customerId}
@@ -601,15 +604,16 @@ export default function Home() {
                           <div className="flex items-center gap-3">
                             <button
                               type="button"
-                              onClick={() =>
+                              onClick={() => {
+                                haptics.light();
                                 setQuantities(prev => ({
                                   ...prev,
                                   [product.id]: Math.max(
                                     0,
                                     (prev[product.id] || 0) - 1
                                   ),
-                                }))
-                              }
+                                }));
+                              }}
                               className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors"
                             >
                               −
@@ -619,12 +623,13 @@ export default function Home() {
                             </span>
                             <button
                               type="button"
-                              onClick={() =>
+                              onClick={() => {
+                                haptics.medium();
                                 setQuantities(prev => ({
                                   ...prev,
                                   [product.id]: (prev[product.id] || 0) + 1,
-                                }))
-                              }
+                                }));
+                              }}
                               className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
                             >
                               +
@@ -731,7 +736,10 @@ export default function Home() {
 
                   {/* Submit Button */}
                   <Button
-                    onClick={handleCreateOrder}
+                    onClick={(e) => {
+                      haptics.heavy();
+                      handleCreateOrder(e);
+                    }}
                     disabled={loading || total === 0}
                     className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-all"
                   >
@@ -833,6 +841,16 @@ export default function Home() {
           </>
         )}
       </div>
+
+      <BottomNav
+        activeTab={showHistory ? "history" : "home"}
+        onHomeClick={() => setShowHistory(false)}
+        onHistoryClick={() => {
+          if (!customerId) return;
+          setShowHistory(true);
+        }}
+        onLogoutClick={handleLogout}
+      />
     </PublicLayout>
   );
 }

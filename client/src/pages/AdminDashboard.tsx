@@ -30,6 +30,7 @@ import { trpc } from "@/lib/trpc";
 import { PromotionsPanel } from "@/components/PromotionsPanel";
 import { ProductsPanel } from "@/components/ProductsPanel";
 import DashboardLayout from "@/components/DashboardLayout";
+import { haptics } from "@/lib/haptics";
 
 interface Order {
   id: number;
@@ -164,6 +165,7 @@ export default function AdminDashboard() {
 
   const handleStatusChange = async (orderId: number, newStatus: string) => {
     try {
+      haptics.medium();
       await updateStatusMutation.mutateAsync({
         orderId,
         status: newStatus as any,
@@ -357,7 +359,10 @@ export default function AdminDashboard() {
                               size="sm"
                               variant="ghost"
                               className="text-orange-600 hover:text-orange-700 font-bold"
-                              onClick={() => setSelectedOrder(order)}
+                              onClick={() => {
+                                haptics.light();
+                                setSelectedOrder(order);
+                              }}
                             >
                               Detalhes
                             </Button>
@@ -644,6 +649,7 @@ export default function AdminDashboard() {
 
                   <div className="flex justify-end pt-4">
                     <Button
+                      onClick={() => haptics.heavy()}
                       className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-8 h-12"
                       disabled={saveSettingsMutation.isPending}
                     >
@@ -698,6 +704,7 @@ export default function AdminDashboard() {
 
                   <div className="flex justify-end pt-4">
                     <Button
+                      onClick={() => haptics.heavy()}
                       className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 h-12"
                       disabled={updateWhatsappMutation.isPending}
                     >

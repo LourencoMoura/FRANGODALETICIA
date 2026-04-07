@@ -19,7 +19,9 @@ export function PublicLayout({
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar nickname={nickname} points={points} onLogout={onLogout} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <div className="hidden sm:block">
+        <Footer />
+      </div>
     </div>
   );
 }

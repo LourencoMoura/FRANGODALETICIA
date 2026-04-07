@@ -13,6 +13,7 @@ import {
 import { Gift, Send, Trash2, Edit2, Plus, Loader2, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { haptics } from "@/lib/haptics";
 
 interface Promotion {
   id: number;
@@ -83,9 +84,11 @@ export function PromotionsPanel() {
     });
     setShowForm(false);
     setEditingPromo(null);
+    haptics.light();
   };
 
   const handleEdit = (promo: Promotion) => {
+    haptics.light();
     setEditingPromo(promo);
     setForm({
       titulo: promo.titulo,
@@ -107,8 +110,10 @@ export function PromotionsPanel() {
     }
 
     if (editingPromo) {
+      haptics.medium();
       updateMutation.mutate({ id: editingPromo.id, ...form });
     } else {
+      haptics.heavy();
       createMutation.mutate(form);
     }
   };
