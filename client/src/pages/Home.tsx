@@ -524,11 +524,11 @@ export default function Home() {
           <>
             {step === "order" && (
               <div className="max-w-2xl mx-auto">
-                <Card className="p-8 shadow-xl">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Card className="p-4 sm:p-8 shadow-xl">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
                       <ShoppingCart className="w-6 h-6 text-orange-600" />
-                      Selecione seus Produtos
+                      Produtos
                     </h2>
                     <div className="flex gap-2">
                       {isPushSupported && (
@@ -551,8 +551,8 @@ export default function Home() {
                             />
                           )}
                           {isSubscribed
-                            ? "Notificações Ativas"
-                            : "Habilitar Notificações"}
+                            ? "Ativas"
+                            : "Notificações"}
                         </Button>
                       )}
                       <Button

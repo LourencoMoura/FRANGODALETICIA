@@ -10,13 +10,13 @@ export function Navbar({ nickname, points, onLogout }: NavbarProps) {
   return (
     <nav className="bg-gradient-to-r from-orange-600 to-amber-600 text-white pt-safe pb-6 shadow-xl">
       <div className="container px-4 flex items-center justify-between mx-auto">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 overflow-hidden">
           <img
             src="/logo.png"
             alt="Logo"
-            className="w-10 h-10 rounded-full bg-white p-1"
+            className="w-10 h-10 rounded-full bg-white p-1 shrink-0"
           />
-          <h1 className="text-xl font-bold tracking-tight">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight truncate max-w-[150px] sm:max-w-none">
             Frango da Letícia
           </h1>
         </div>
@@ -28,7 +28,7 @@ export function Navbar({ nickname, points, onLogout }: NavbarProps) {
           </div>
 
           <div className="text-right leading-tight">
-            <p className="font-bold text-sm">{nickname}</p>
+            <p className="font-bold text-sm truncate max-w-[80px] sm:max-w-none">{nickname}</p>
             <div className="flex items-center justify-end gap-1 sm:hidden">
               <Gift className="w-3 h-3 text-amber-200" />
               <span className="text-[10px] font-bold">{points} pts</span>
