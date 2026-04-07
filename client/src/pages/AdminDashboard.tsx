@@ -184,74 +184,75 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8 animate-in fade-in duration-500">
-        {/* Stats Section - Visible mostly on Orders tab but keeps layout consistent */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6 border-l-4 border-l-orange-500 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
-                  Total de Pedidos
-                </p>
-                <p className="text-3xl font-black text-gray-800">
-                  {stats.total}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-orange-200" />
-            </div>
-          </Card>
 
-          <Card className="p-6 border-l-4 border-l-yellow-500 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
-                  Pendentes
-                </p>
-                <p className="text-3xl font-black text-gray-800">
-                  {stats.pending}
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-yellow-200" />
-            </div>
-          </Card>
-
-          <Card className="p-6 border-l-4 border-l-green-500 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
-                  Prontos
-                </p>
-                <p className="text-3xl font-black text-gray-800">
-                  {stats.ready}
-                </p>
-              </div>
-              <Package className="w-8 h-8 text-green-200" />
-            </div>
-          </Card>
-
-          <Card className="p-6 border-l-4 border-l-blue-500 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
-                  Entregues
-                </p>
-                <p className="text-3xl font-black text-gray-800">
-                  {stats.delivered}
-                </p>
-              </div>
-              <CheckSquare className="w-8 h-8 text-blue-200" />
-            </div>
-          </Card>
-        </div>
-
-        {/* Content Tabs */}
-        <div className="mt-8">
+        <div className="mt-2 text-none italic-none">
           {activeTab === "orders" && (
-            <Card className="p-6 shadow-md border-orange-100 italic-none">
-              <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h2 className="text-2xl font-black text-gray-800 flex items-center gap-2">
-                  <Package className="text-orange-500" />
-                  Gestão de Pedidos
-                </h2>
+            <div className="space-y-6">
+              {/* Stats Section - Agora apenas na aba de Pedidos */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="p-6 border-l-4 border-l-orange-500 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        Total de Pedidos
+                      </p>
+                      <p className="text-3xl font-black text-gray-800">
+                        {stats.total}
+                      </p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-orange-200" />
+                  </div>
+                </Card>
+
+                <Card className="p-6 border-l-4 border-l-yellow-500 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        Pendentes
+                      </p>
+                      <p className="text-3xl font-black text-gray-800">
+                        {stats.pending}
+                      </p>
+                    </div>
+                    <Clock className="w-8 h-8 text-yellow-200" />
+                  </div>
+                </Card>
+
+                <Card className="p-6 border-l-4 border-l-green-500 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        Prontos
+                      </p>
+                      <p className="text-3xl font-black text-gray-800">
+                        {stats.ready}
+                      </p>
+                    </div>
+                    <Package className="w-8 h-8 text-green-200" />
+                  </div>
+                </Card>
+
+                <Card className="p-6 border-l-4 border-l-blue-500 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        Entregues
+                      </p>
+                      <p className="text-3xl font-black text-gray-800">
+                        {stats.delivered}
+                      </p>
+                    </div>
+                    <CheckSquare className="w-8 h-8 text-blue-200" />
+                  </div>
+                </Card>
+              </div>
+
+              <Card className="p-6 shadow-md border-orange-100 italic-none">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                  <h2 className="text-2xl font-black text-gray-800 flex items-center gap-2">
+                    <Package className="text-orange-500" />
+                    Gestão de Pedidos
+                  </h2>
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
@@ -517,6 +518,7 @@ export default function AdminDashboard() {
                 </DialogContent>
               </Dialog>
             </Card>
+          </div>
           )}
 
           {activeTab === "promotions" && <PromotionsPanel />}
