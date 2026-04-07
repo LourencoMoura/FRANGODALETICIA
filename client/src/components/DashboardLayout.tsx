@@ -105,6 +105,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider
+      className="h-full w-full overflow-hidden flex"
       style={
         {
           "--sidebar-width": `${sidebarWidth}px`,
@@ -286,7 +287,7 @@ function DashboardLayoutContent({
         />
       </div>
 
-      <SidebarInset>
+      <SidebarInset className="flex flex-col h-full overflow-hidden">
         {isMobile && (
           <div className="flex border-b h-auto min-h-[3.5rem] pt-safe items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40 shadow-sm">
             <div className="flex items-center gap-2 h-14">
