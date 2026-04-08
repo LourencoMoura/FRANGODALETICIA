@@ -442,34 +442,73 @@ export default function AdminDashboard() {
                           <Package className="w-5 h-5 text-orange-500" />
                           Itens
                         </h3>
-                        <div className="space-y-2">
-                          {Array.isArray(selectedOrder.items) ? (
-                            selectedOrder.items.map((item: any, idx: number) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <span className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 font-bold text-sm">
-                                    {item.quantity}x
-                                  </span>
-                                  <span className="font-medium text-gray-700">
-                                    {item.name || item.titulo}
+                        <div className="space-y-3">
+                          {(() => {
+                            let items = [];
+                            try {
+                              items = Array.isArray(selectedOrder.items)
+                                ? selectedOrder.items
+                                : typeof selectedOrder.items === "string"
+                                  ? JSON.parse(selectedOrder.items)
+                                  : [];
+                            } catch (e) {
+                              console.error("Erro ao converter itens:", e);
+                            }
+
+                            if (!items || items.length === 0) {
+                              return (
+                                <p className="text-gray-400 italic text-sm py-4 text-center bg-gray-50 rounded-lg">
+                                  Nenhum item encontrado neste pedido.
+                                </p>
+                              );
+                            }
+
+                            return items.map((item: any, idx: number) => {
+                              const nomeItem =
+                                item.product_name ||
+                                item.titulo ||
+                                item.item_name ||
+                                item.name ||
+                                item.nome ||
+                                "Produto";
+                              const precoUnitario = Number(
+                                item.unit_price ||
+                                  item.price ||
+                                  item.preco ||
+                                  item.item_price ||
+                                  0
+                              );
+                              const qtd = Number(
+                                item.quantity || item.quantidade || 1
+                              );
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:border-orange-200 transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm">
+                                      {qtd}x
+                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="font-black text-gray-800 text-sm">
+                                        {nomeItem}
+                                      </span>
+                                      {precoUnitario > 0 && (
+                                        <span className="text-[10px] text-gray-500">
+                                          R$ {precoUnitario.toFixed(2)} un.
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className="font-black text-gray-900 border-l pl-3 border-orange-50">
+                                    R$ {(precoUnitario * qtd).toFixed(2)}
                                   </span>
                                 </div>
-                                <span className="font-bold text-gray-900">
-                                  R${" "}
-                                  {(
-                                    Number(item.price || 0) * item.quantity
-                                  ).toFixed(2)}
-                                </span>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-gray-400 italic">
-                              Erro ao carregar itens.
-                            </p>
-                          )}
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
 

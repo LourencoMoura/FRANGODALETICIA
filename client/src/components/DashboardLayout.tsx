@@ -28,6 +28,7 @@ import {
   Gift,
   ShoppingCart,
   Home,
+  Settings,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -43,6 +44,11 @@ const menuItems = [
     icon: ShoppingCart,
     label: "Produtos",
     path: "/admin/dashboard?tab=products",
+  },
+  {
+    icon: Settings,
+    label: "Configurações",
+    path: "/admin/dashboard?tab=settings",
   },
   { icon: Home, label: "Ver Site", path: "/" },
 ];

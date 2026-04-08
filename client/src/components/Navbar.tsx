@@ -8,15 +8,17 @@ interface NavbarProps {
 
 export function Navbar({ nickname, points, onLogout }: NavbarProps) {
   return (
-    <nav className="bg-gradient-to-r from-orange-600 to-amber-600 text-white pt-safe pb-6 shadow-xl">
+    <nav className="bg-gradient-to-r from-orange-600 to-amber-600 text-white pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6 shadow-xl sticky top-0 z-50">
       <div className="container px-4 flex items-center justify-between mx-auto">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <img
-            src="/icon-192x192.png"
-            alt="Logo"
-            className="w-10 h-10 rounded-full bg-white p-1 shrink-0 object-contain"
-          />
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight truncate max-w-[150px] sm:max-w-none">
+        <div className="flex items-center gap-4 overflow-hidden">
+          <div className="relative shrink-0">
+            <img
+              src="/icon-192x192.png"
+              alt="Logo"
+              className="w-12 h-12 rounded-full bg-white p-1 object-contain shadow-md border-2 border-white/20"
+            />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate max-w-[150px] sm:max-w-none leading-none">
             Frango da Letícia
           </h1>
         </div>
