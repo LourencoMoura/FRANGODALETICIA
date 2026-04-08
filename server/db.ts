@@ -504,9 +504,19 @@ export async function deleteCustomer(id: number) {
   if (!db) throw new Error("Database not available");
 
   try {
-    // Delete from users table too if exists
+    // Apaga inscrições de notificações push vinculadas (para garantir que não haja erro de restrição de chave estrangeira)
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.customerId, id));
+
+    // Apaga todos os pedidos do cliente
+    await db.delete(orders).where(eq(orders.customerId, id));
+    
+    // Apaga a sessão do usuário associada
+    const openId = `customer:${id}`;
+    await db.delete(users).where(eq(users.openId, openId));
+
+    // Finalmente, apaga o cliente
     await db.delete(customers).where(eq(customers.id, id));
-    // Note: CASCADE in schema will handle orders and pushSubscriptions
+    
     return true;
   } catch (error) {
     console.error("[Database] Failed to delete customer:", error);
