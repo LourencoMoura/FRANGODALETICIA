@@ -64,7 +64,7 @@ export default function Home() {
   const [tipo, setTipo] = useState<OrderType>("entrega");
   const [localidade, setLocalidade] = useState<Localidade>("guamare");
   const [endereco, setEndereco] = useState("");
-  const [horarioRetirada, setHorarioRetirada] = useState("11:00");
+  const [horarioRetirada, setHorarioRetirada] = useState("09:00");
   const [observacoes, setObservacoes] = useState("");
 
   // Product quantities
@@ -220,7 +220,11 @@ export default function Home() {
     if (orderTipo === "entrega") {
       msg += `🛵 *ENTREGA:* ${orderLocalidade === "guamare" ? "Guamaré" : "Salina / Outras"}\n`;
     } else {
-      msg += `🏪 *RETIRADA:* ${orderHorario}\n`;
+      msg += `🏪 *RETIRADA:* ${orderHorario || "Horário não informado"}\n`;
+    }
+
+    if (orderObs) {
+      msg += `📝 *OBSERVAÇÕES:* ${orderObs}\n`;
     }
 
     msg += ` 💰 *TOTAL:* R$ ${Number(orderTotal).toFixed(2)}\n`;
@@ -718,6 +722,16 @@ export default function Home() {
                             onChange={e => setHorarioRetirada(e.target.value)}
                             className="w-full px-3 py-2 border-2 border-orange-200 rounded focus:outline-none focus:border-orange-500 bg-white"
                           >
+                            <option value="09:00">09:00</option>
+                            <option value="09:15">09:15</option>
+                            <option value="09:30">09:30</option>
+                            <option value="09:45">09:45</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:15">10:15</option>
+                            <option value="10:30">10:30</option>
+                            <option value="10:45">10:45</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:15">11:15</option>
                             <option value="11:30">11:30</option>
                             <option value="11:45">11:45</option>
                             <option value="12:00">12:00</option>
@@ -725,12 +739,6 @@ export default function Home() {
                             <option value="12:30">12:30</option>
                             <option value="12:45">12:45</option>
                             <option value="13:00">13:00</option>
-                            <option value="13:15">13:15</option>
-                            <option value="13:30">13:30</option>
-                            <option value="13:45">13:45</option>
-                            <option value="14:00">14:00</option>
-                            <option value="14:15">14:15</option>
-                            <option value="14:30">14:30</option>
                           </select>
                           <p className="text-[10px] text-gray-400 mt-1 italic">
                             Escolha o melhor horário para buscar seu pedido.
