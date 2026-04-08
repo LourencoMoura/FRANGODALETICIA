@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, lt } from "drizzle-orm";
 import * as schema from "../drizzle/schema.js";
 import {
   type InsertUser,
@@ -495,5 +495,37 @@ export async function deleteProduct(id: number) {
   } catch (error) {
     console.error("[Database] Failed to delete product:", error);
     return false;
+  }
+}
+
+// Global deletion functions
+export async function deleteCustomer(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  try {
+    // Delete from users table too if exists
+    await db.delete(customers).where(eq(customers.id, id));
+    // Note: CASCADE in schema will handle orders and pushSubscriptions
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete customer:", error);
+    throw error;
+  }
+}
+
+export async function deleteOldOrders(days: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    await db.delete(orders).where(lt(orders.createdAt, cutoffDate));
+    return true;
+  } catch (error) {
+    console.error(`[Database] Failed to delete orders older than ${days} days:`, error);
+    throw error;
   }
 }

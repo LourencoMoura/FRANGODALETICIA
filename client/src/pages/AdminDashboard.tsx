@@ -23,6 +23,8 @@ import {
   ShieldCheck,
   CheckSquare,
   MapPin,
+  Trash2,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -126,6 +128,22 @@ export default function AdminDashboard() {
       utils.settings.getPublicSettings.invalidate();
     },
     onError: err => toast.error("Erro ao salvar: " + err.message),
+  });
+
+  const deleteCustomerMutation = trpc.customers.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Cliente excluído com sucesso!");
+      utils.customers.list.invalidate();
+    },
+    onError: err => toast.error("Erro ao excluir: " + err.message),
+  });
+
+  const cleanupOrdersMutation = trpc.orders.cleanupOldOrders.useMutation({
+    onSuccess: () => {
+      toast.success("Histórico de pedidos limpo!");
+      utils.orders.list.invalidate();
+    },
+    onError: err => toast.error("Erro na limpeza: " + err.message),
   });
 
   useEffect(() => {
@@ -552,6 +570,9 @@ export default function AdminDashboard() {
                         <th className="text-left py-4 px-4 font-bold text-gray-600 text-sm">
                           Saldo Fidelidade
                         </th>
+                        <th className="text-right py-4 px-4 font-bold text-gray-600 text-sm">
+                          Ações
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -578,6 +599,26 @@ export default function AdminDashboard() {
                                 {customer.points} pts
                               </span>
                             </div>
+                          </td>
+                          <td className="py-4 px-4 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => {
+                                if (
+                                  confirm(
+                                    `Tem certeza que deseja excluir o cliente ${customer.nome}? Isso apagará também todo o histórico de pedidos dele.`
+                                  )
+                                ) {
+                                  deleteCustomerMutation.mutate({
+                                    id: customer.id,
+                                  });
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </td>
                         </tr>
                       ))}

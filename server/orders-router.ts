@@ -15,6 +15,7 @@ import {
   getAllOrders,
   getOrderById,
   getDb,
+  deleteOldOrders,
 } from "./db.js";
 
 // Configure VAPID
@@ -242,6 +243,19 @@ export const ordersRouter = router({
       } catch (error) {
         console.error("Error getting order by id:", error);
         throw error;
+      }
+    }),
+
+  // Cleanup old orders
+  cleanupOldOrders: adminProcedure
+    .input(z.object({ days: z.number().default(30) }))
+    .mutation(async ({ input }) => {
+      try {
+        await deleteOldOrders(input.days);
+        return { success: true };
+      } catch (error: any) {
+        console.error("Error cleaning up orders:", error);
+        throw new Error(error.message || "Falha ao limpar pedidos");
       }
     }),
 });

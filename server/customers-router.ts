@@ -2,7 +2,7 @@ import { publicProcedure, router, adminProcedure } from "./_core/trpc.js";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { customers } from "../drizzle/schema.js";
-import { getDb, upsertUser } from "./db.js";
+import { getDb, upsertUser, deleteCustomer } from "./db.js";
 import { TRPCError } from "@trpc/server";
 import { sdk } from "./_core/sdk.js";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
@@ -205,4 +205,20 @@ export const customersRouter = router({
       throw error;
     }
   }),
+
+  // Delete customer
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        await deleteCustomer(input.id);
+        return { success: true };
+      } catch (error: any) {
+        console.error("Error deleting customer:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Falha ao excluir cliente",
+        });
+      }
+    }),
 });
