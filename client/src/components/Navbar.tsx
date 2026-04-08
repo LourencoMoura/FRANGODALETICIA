@@ -12,9 +12,9 @@ export function Navbar({ nickname, points, onLogout }: NavbarProps) {
       <div className="container px-4 flex items-center justify-between mx-auto">
         <div className="flex items-center gap-3 overflow-hidden">
           <img
-            src="/logo.png"
+            src="/icon-192x192.png"
             alt="Logo"
-            className="w-10 h-10 rounded-full bg-white p-1 shrink-0"
+            className="w-10 h-10 rounded-full bg-white p-1 shrink-0 object-contain"
           />
           <h1 className="text-lg sm:text-xl font-bold tracking-tight truncate max-w-[150px] sm:max-w-none">
             Frango da Letícia

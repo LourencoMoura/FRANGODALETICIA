@@ -43,6 +43,7 @@ interface Order {
   total: number;
   status: string;
   paymentStatus?: string;
+  items: any[];
   createdAt: string;
 }
 
@@ -101,7 +102,7 @@ export default function AdminDashboard() {
     trpc.customers.list.useQuery();
   const mpSettings = trpc.payment.getAdminSettings.useQuery();
   const { data: publicSettings } = trpc.settings.getPublicSettings.useQuery();
-  const { data: adminSettings } = trpc.settings.getAllSettings.useQuery();
+  const { data: adminSettings } = trpc.settings.getAdminSettings.useQuery();
 
   const utils = trpc.useUtils();
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
@@ -146,10 +147,10 @@ export default function AdminDashboard() {
       });
     }
     if (adminSettings) {
-      const wa = adminSettings.find(s => s.key === "whatsapp_suporte");
+      const wa = adminSettings.find((s: any) => s.key === "whatsapp_suporte");
       if (wa) setWhatsapp(wa.value);
 
-      const fee = adminSettings.find(s => s.key === "taxa_entrega");
+      const fee = adminSettings.find((s: any) => s.key === "taxa_entrega");
       if (fee) setDeliveryFee(fee.value);
     }
   }, [mpSettings.data, adminSettings]);
