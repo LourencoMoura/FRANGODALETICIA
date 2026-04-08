@@ -122,10 +122,11 @@ export default function AdminDashboard() {
     onError: err => toast.error("Erro ao salvar: " + err.message),
   });
 
-  const updateWhatsappMutation = trpc.settings.updateSetting.useMutation({
+  const updateSettingMutation = trpc.settings.updateSetting.useMutation({
     onSuccess: () => {
       toast.success("Configuração atualizada!");
       utils.settings.getPublicSettings.invalidate();
+      utils.settings.getAdminSettings.invalidate();
     },
     onError: err => toast.error("Erro ao salvar: " + err.message),
   });
@@ -763,7 +764,7 @@ export default function AdminDashboard() {
                   className="space-y-6"
                   onSubmit={e => {
                     e.preventDefault();
-                    updateWhatsappMutation.mutate({
+                    updateSettingMutation.mutate({
                       key: "whatsapp_suporte",
                       value: whatsapp,
                     });
@@ -789,9 +790,9 @@ export default function AdminDashboard() {
                     <Button
                       onClick={() => haptics.heavy()}
                       className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 h-12"
-                      disabled={updateWhatsappMutation.isPending}
+                      disabled={updateSettingMutation.isPending}
                     >
-                      {updateWhatsappMutation.isPending
+                      {updateSettingMutation.isPending
                         ? "Salvando..."
                         : "Salvar Numero do WhatsApp"}
                     </Button>
@@ -818,7 +819,7 @@ export default function AdminDashboard() {
                   className="space-y-6"
                   onSubmit={e => {
                     e.preventDefault();
-                    updateWhatsappMutation.mutate({
+                    updateSettingMutation.mutate({
                       key: "taxa_entrega",
                       value: deliveryFee,
                     });
@@ -844,9 +845,9 @@ export default function AdminDashboard() {
                   <div className="flex justify-end pt-4">
                     <Button
                       className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-8 h-12"
-                      disabled={updateWhatsappMutation.isPending}
+                      disabled={updateSettingMutation.isPending}
                     >
-                      {updateWhatsappMutation.isPending
+                      {updateSettingMutation.isPending
                         ? "Salvando..."
                         : "Salvar Taxa de Entrega"}
                     </Button>
