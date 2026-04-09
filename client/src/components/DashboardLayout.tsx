@@ -82,7 +82,7 @@ export default function DashboardLayout({
     return <DashboardLayoutSkeleton />;
   }
 
-  if (!user || user.role !== "admin") {
+  if (!user || (user.role !== "admin" && user.role !== "super_admin")) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">

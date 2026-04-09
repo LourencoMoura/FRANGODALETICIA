@@ -733,6 +733,7 @@ export default function AdminDashboard() {
 
                   <div className="flex justify-end pt-4">
                     <Button
+                      type="submit"
                       onClick={() => haptics.heavy()}
                       className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-8 h-12"
                       disabled={saveSettingsMutation.isPending}
@@ -788,6 +789,7 @@ export default function AdminDashboard() {
 
                   <div className="flex justify-end pt-4">
                     <Button
+                      type="submit"
                       onClick={() => haptics.heavy()}
                       className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 h-12"
                       disabled={updateSettingMutation.isPending}
@@ -844,6 +846,8 @@ export default function AdminDashboard() {
 
                   <div className="flex justify-end pt-4">
                     <Button
+                      type="submit"
+                      onClick={() => haptics.heavy()}
                       className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-8 h-12"
                       disabled={updateSettingMutation.isPending}
                     >

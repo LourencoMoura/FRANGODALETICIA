@@ -40,7 +40,7 @@ export const adminsRouter = router({
         openId: openId,
         name: "Admin",
         email: admin.email,
-        role: "admin",
+        role: admin.role,
         lastSignedIn: new Date(),
       });
 

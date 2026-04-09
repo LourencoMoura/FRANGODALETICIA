@@ -27,7 +27,7 @@ export const promotionTipoEnum = pgEnum("promotion_tipo", [
   "percentual",
   "fixo",
 ]);
-export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
+export const userRoleEnum = pgEnum("user_role", ["user", "admin", "super_admin"]);
 
 export const admins = pgTable(
   "admins",
