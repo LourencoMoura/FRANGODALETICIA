@@ -20,9 +20,8 @@ function AdminButton() {
     <button
       type="button"
       onClick={() => setLocation("/admin")}
-      className="fixed bottom-6 right-6 flex flex-col items-center justify-center gap-1 hover:opacity-70 transition-opacity cursor-pointer group"
+      className="fixed bottom-6 right-6 flex flex-col items-center justify-center gap-1 hover:opacity-70 transition-opacity cursor-pointer group bg-transparent border-none"
       title="Painel Administrativo - Site Seguro"
-      style={{ background: "none", border: "none" }}
     >
       <div className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center bg-white shadow-sm group-hover:shadow-md transition-shadow">
         <svg
