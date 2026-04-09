@@ -117,8 +117,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
         target: users.openId,
         set: updateSet as any,
       });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
+  } catch (error: any) {
+    console.error("[Database] Failed to upsert user:", {
+      message: error?.message,
+      detail: error?.detail,
+      hint: error?.hint,
+      openId: user.openId
+    });
     throw error;
   }
 }
