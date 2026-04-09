@@ -69,10 +69,11 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
         whatsapp: loginWhatsapp,
       });
 
+      // Se por algum motivo o servidor não disparar erro mas retornar sucesso falso
       if (!result.success || !result.customer) {
         toast.error("WhatsApp não encontrado. Faça o cadastro primeiro!");
-        setMode("signup");
         setSignupWhatsapp(loginWhatsapp);
+        setMode("signup");
         setLoading(false);
         return;
       }
@@ -85,8 +86,26 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
       toast.success(`Bem-vindo de volta, ${result.customer.apelido}! 🍗`);
     } catch (error: any) {
       console.error("Login Error:", error);
-      const errorMsg = error?.message || "Erro ao fazer login";
-      toast.error(errorMsg);
+      
+      // Verifica se o erro é de "Cliente não encontrado" (NOT_FOUND ou mensagem específica)
+      const isNotFound = 
+        error?.message?.includes("Cliente não encontrado") || 
+        error?.shape?.data?.code === "NOT_FOUND";
+
+      if (isNotFound) {
+        toast.error("Número não cadastrado! Vamos te levar para a tela de cadastro... 🍗", {
+          duration: 4000
+        });
+        
+        // Pequeno delay para o usuário ler a mensagem antes de mudar a tela
+        setTimeout(() => {
+          setSignupWhatsapp(loginWhatsapp);
+          setMode("signup");
+        }, 800);
+      } else {
+        const errorMsg = error?.message || "Erro ao fazer login";
+        toast.error("Sistema Temporariamente Indisponível. Tente novamente em instantes.");
+      }
     } finally {
       setLoading(false);
     }
