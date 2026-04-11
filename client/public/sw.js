@@ -151,8 +151,10 @@ self.addEventListener("push", event => {
     body: notificationData.body,
     icon: notificationData.icon,
     badge: notificationData.badge,
-    vibrate: [200, 100, 200],
-    tag: "frango-notification",
+    vibrate: [300, 100, 300, 100, 300],
+    tag: `frango-notification-${Date.now()}`,
+    renotify: true,
+    silent: false,
     requireInteraction: false,
     data: {
       url: notificationData.url,
