@@ -258,14 +258,16 @@ export const customersRouter = router({
           .set({ points: sql`${customers.points} - 200` })
           .where(eq(customers.id, input.customerId));
 
-        // Enviar notificação push de fidelidade
-        await sendPushNotification(
+        // Enviar notificação push de fidelidade e capturar o resultado
+        const pushResult = await sendPushNotification(
           input.customerId,
           "🎁 Você ganhou um desconto!",
           `Olá ${customer.apelido}! Sua fidelidade foi recompensada. Você tem R$ 10,00 de desconto no seu próximo pedido no Frango da Letícia! 🍗`
         );
 
-        return { success: true, discount: 10, remainingPoints: currentPoints - 200 };
+        const notificationSent = pushResult.sent > 0;
+
+        return { success: true, discount: 10, remainingPoints: currentPoints - 200, notificationSent };
       } catch (error: any) {
         console.error("Error redeeming points:", error);
         if (error instanceof TRPCError) throw error;

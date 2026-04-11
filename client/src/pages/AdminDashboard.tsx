@@ -141,7 +141,12 @@ export default function AdminDashboard() {
 
   const redeemPointsMutation = trpc.customers.redeemPoints.useMutation({
     onSuccess: (data) => {
-      toast.success(`🎁 Desconto aplicado! Notificação enviada ao cliente. Saldo restante: ${data.remainingPoints} pts`);
+      if (data.notificationSent) {
+        toast.success(`🎁 Desconto aplicado! Notificação enviada ao cliente. Saldo restante: ${data.remainingPoints} pts`);
+      } else {
+        toast.success(`✅ 200 pontos deduzidos. Saldo restante: ${data.remainingPoints} pts`);
+        toast.warning(`⚠️ O cliente não tem notificações push ativas. Avise-o diretamente pelo WhatsApp.`);
+      }
       utils.customers.list.invalidate();
     },
     onError: err => toast.error("Erro ao aplicar desconto: " + err.message),
@@ -153,6 +158,15 @@ export default function AdminDashboard() {
       utils.orders.list.invalidate();
     },
     onError: err => toast.error("Erro na limpeza: " + err.message),
+  });
+
+  const deleteOrderMutation = trpc.orders.deleteOrder.useMutation({
+    onSuccess: () => {
+      toast.success("Pedido excluído com sucesso!");
+      utils.orders.list.invalidate();
+      setSelectedOrder(null);
+    },
+    onError: err => toast.error("Erro ao excluir pedido: " + err.message),
   });
 
   useEffect(() => {
@@ -384,17 +398,32 @@ export default function AdminDashboard() {
                             </select>
                           </td>
                           <td className="py-4 px-4 text-right">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-orange-600 hover:text-orange-700 font-bold"
-                              onClick={() => {
-                                haptics.light();
-                                setSelectedOrder(order);
-                              }}
-                            >
-                              Detalhes
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-orange-600 hover:text-orange-700 font-bold"
+                                onClick={() => {
+                                  haptics.light();
+                                  setSelectedOrder(order);
+                                }}
+                              >
+                                Detalhes
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                disabled={deleteOrderMutation.isPending}
+                                onClick={() => {
+                                  if (confirm(`Excluir o Pedido #${order.id}? Esta ação não pode ser desfeita.`)) {
+                                    deleteOrderMutation.mutate({ id: order.id });
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}

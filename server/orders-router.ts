@@ -258,4 +258,19 @@ export const ordersRouter = router({
         throw new Error(error.message || "Falha ao limpar pedidos");
       }
     }),
+
+  // Delete a single order
+  deleteOrder: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.delete(orders).where(eq(orders.id, input.id));
+        return { success: true };
+      } catch (error: any) {
+        console.error("Error deleting order:", error);
+        throw new Error(error.message || "Falha ao excluir pedido");
+      }
+    }),
 });
