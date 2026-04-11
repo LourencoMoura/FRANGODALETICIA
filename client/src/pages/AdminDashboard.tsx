@@ -139,6 +139,14 @@ export default function AdminDashboard() {
     onError: err => toast.error("Erro ao excluir: " + err.message),
   });
 
+  const redeemPointsMutation = trpc.customers.redeemPoints.useMutation({
+    onSuccess: (data) => {
+      toast.success(`🎁 Desconto aplicado! Notificação enviada ao cliente. Saldo restante: ${data.remainingPoints} pts`);
+      utils.customers.list.invalidate();
+    },
+    onError: err => toast.error("Erro ao aplicar desconto: " + err.message),
+  });
+
   const cleanupOrdersMutation = trpc.orders.cleanupOldOrders.useMutation({
     onSuccess: () => {
       toast.success("Histórico de pedidos limpo!");
@@ -545,16 +553,27 @@ export default function AdminDashboard() {
                       </div>
 
                       {/* Observações */}
-                      {selectedOrder.observacoes && (
-                        <div>
-                          <h3 className="text-sm font-bold text-gray-700 mb-2">
-                            Observações do Cliente
-                          </h3>
-                          <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-gray-700 italic">
-                            "{selectedOrder.observacoes}"
+                      {selectedOrder.observacoes && (() => {
+                        const cliente = customersList?.find(
+                          (c: any) => c.id === selectedOrder.customerId
+                        );
+                        const nomeCliente = cliente
+                          ? `${cliente.nome} / ${cliente.apelido}`
+                          : `Cliente #${selectedOrder.customerId}`;
+                        return (
+                          <div>
+                            <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                              Observações do Cliente
+                              <span className="text-orange-600 font-black uppercase">
+                                — {nomeCliente}
+                              </span>
+                            </h3>
+                            <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-gray-700 italic">
+                              "{selectedOrder.observacoes}"
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {/* Total */}
                       <div className="flex justify-between items-center pt-4 border-t border-gray-100">
@@ -619,7 +638,9 @@ export default function AdminDashboard() {
                       {customersList.map((customer: any) => (
                         <tr
                           key={customer.id}
-                          className="hover:bg-gray-50 transition-colors"
+                          className={`hover:bg-gray-50 transition-colors ${
+                            (customer.points ?? 0) >= 200 ? "bg-amber-50/40" : ""
+                          }`}
                         >
                           <td className="py-4 px-4">
                             <p className="font-bold text-gray-800">
@@ -639,26 +660,53 @@ export default function AdminDashboard() {
                                 {customer.points} pts
                               </span>
                             </div>
+                            {(customer.points ?? 0) >= 200 && (
+                              <span className="ml-2 text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 rounded-full px-2 py-0.5">
+                                Pronto p/ desconto!
+                              </span>
+                            )}
                           </td>
                           <td className="py-4 px-4 text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-gray-400 hover:text-red-600 hover:bg-red-50"
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    `Tem certeza que deseja excluir o cliente ${customer.nome}? Isso apagará também todo o histórico de pedidos dele.`
-                                  )
-                                ) {
-                                  deleteCustomerMutation.mutate({
-                                    id: customer.id,
-                                  });
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center justify-end gap-2">
+                              {(customer.points ?? 0) >= 200 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-orange-600 border-orange-300 hover:bg-orange-50 font-bold text-xs gap-1"
+                                  disabled={redeemPointsMutation.isPending}
+                                  onClick={() => {
+                                    if (
+                                      confirm(
+                                        `Aplicar R$ 10,00 de desconto para ${customer.nome}?\n\nIsso irá deduzir 200 pontos do saldo dele e enviar uma notificação push.`
+                                      )
+                                    ) {
+                                      redeemPointsMutation.mutate({ customerId: customer.id });
+                                    }
+                                  }}
+                                >
+                                  <Gift className="w-3 h-3" />
+                                  Aplicar Desconto
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      `Tem certeza que deseja excluir o cliente ${customer.nome}? Isso apagará também todo o histórico de pedidos dele.`
+                                    )
+                                  ) {
+                                    deleteCustomerMutation.mutate({
+                                      id: customer.id,
+                                    });
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}

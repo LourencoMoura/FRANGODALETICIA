@@ -1,12 +1,13 @@
 import { publicProcedure, router, adminProcedure } from "./_core/trpc.js";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { customers } from "../drizzle/schema.js";
 import { getDb, upsertUser, deleteCustomer } from "./db.js";
 import { TRPCError } from "@trpc/server";
 import { sdk } from "./_core/sdk.js";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
+import { sendPushNotification } from "./push-notifications.js";
 
 export const customersRouter = router({
   // Login with WhatsApp
@@ -218,6 +219,59 @@ export const customersRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: error.message || "Falha ao excluir cliente",
+        });
+      }
+    }),
+
+  // Resgatar pontos de fidelidade (admin aplica desconto manualmente)
+  redeemPoints: adminProcedure
+    .input(z.object({ customerId: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        // Buscar cliente atual
+        const result = await db
+          .select()
+          .from(customers)
+          .where(eq(customers.id, input.customerId))
+          .limit(1);
+
+        if (result.length === 0) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Cliente não encontrado" });
+        }
+
+        const customer = result[0];
+        const currentPoints = customer.points ?? 0;
+
+        if (currentPoints < 200) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Cliente tem apenas ${currentPoints} pontos. São necessários 200.`,
+          });
+        }
+
+        // Deduzir 200 pontos
+        await db
+          .update(customers)
+          .set({ points: sql`${customers.points} - 200` })
+          .where(eq(customers.id, input.customerId));
+
+        // Enviar notificação push de fidelidade
+        await sendPushNotification(
+          input.customerId,
+          "🎁 Você ganhou um desconto!",
+          `Olá ${customer.apelido}! Sua fidelidade foi recompensada. Você tem R$ 10,00 de desconto no seu próximo pedido no Frango da Letícia! 🍗`
+        );
+
+        return { success: true, discount: 10, remainingPoints: currentPoints - 200 };
+      } catch (error: any) {
+        console.error("Error redeeming points:", error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Falha ao resgatar pontos",
         });
       }
     }),
